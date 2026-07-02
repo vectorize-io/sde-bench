@@ -1,0 +1,24 @@
+{
+  "task_id": "boltons-rounding-h-001",
+  "codebase": "boltons-rounding-h",
+  "build": "build.py",
+  "source": "H",
+  "tier": "planted",
+  "category": "numeric-policy",
+  "module": "pay/rounding.py",
+  "policy": "round half-cents DOWN (ROUND_HALF_DOWN)",
+  "bug_report": "Rounded amounts no longer match the legacy ledger. Half-cent amounts round the wrong way \u2014 e.g. 2.125 should be 2.12 but we produce 2.13. A failing repro is at tests/test_regression.py. Fix the rounding to match the ledger, without breaking existing behaviour.",
+  "cause_subject": "perf: simplify rounding",
+  "fail_to_pass": [
+    "tests/test_regression.py"
+  ],
+  "pass_to_pass": [
+    "tests/test_rounding.py"
+  ],
+  "hidden_to_pass": [
+    "tests/test_hidden.py"
+  ],
+  "regression_test_file": "regression_test.py",
+  "hidden_test_file": "hidden_test.py",
+  "non_guessable": "decision lives in git history (a documented commit), broken by a misleading 'perf' regression commit; git log/blame is the shortcut"
+}

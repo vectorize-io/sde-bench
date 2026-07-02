@@ -1,23 +1,23 @@
 {
   "dataset": "sde-bench",
   "host": "boltons (github.com/mahmoud/boltons) @ 979fa9b",
-  "n_tasks": 10,
+  "n_tasks": 15,
   "by_source": {
     "F": 9,
-    "H": 1
+    "H": 6
   },
   "by_tier": {
-    "planted": 5,
+    "planted": 10,
     "real-function": 5
   },
   "by_category": {
-    "collection-merge": 1,
+    "collection-merge": 2,
     "filter-rule": 1,
     "invariant": 1,
     "mapping": 2,
-    "numeric-policy": 2,
-    "ordering": 1,
-    "set-membership": 2
+    "numeric-policy": 4,
+    "ordering": 2,
+    "set-membership": 3
   },
   "categories": [
     "collection-merge",
@@ -30,12 +30,28 @@
   ],
   "tasks": [
     {
+      "task_id": "boltons-budget-h-001",
+      "source": "H",
+      "tier": "planted",
+      "category": "numeric-policy",
+      "function": null,
+      "policy": "exactly 7 (measured to the rate-limit window)"
+    },
+    {
       "task_id": "boltons-budget-001",
       "source": "F",
       "tier": "planted",
       "category": "numeric-policy",
       "function": "MAX_ATTEMPTS",
       "policy": "exactly 7 (measured to the rate-limit window)"
+    },
+    {
+      "task_id": "boltons-discount-h-001",
+      "source": "H",
+      "tier": "planted",
+      "category": "ordering",
+      "function": null,
+      "policy": "percent discounts apply before fixed-amount"
     },
     {
       "task_id": "boltons-discount-001",
@@ -54,6 +70,14 @@
       "policy": "drop all-numeric tags EXCEPT 4-digit years (1900-2099)"
     },
     {
+      "task_id": "boltons-listmerge-h-001",
+      "source": "H",
+      "tier": "planted",
+      "category": "collection-merge",
+      "function": null,
+      "policy": "union list values (de-duplicated, base order first)"
+    },
+    {
       "task_id": "boltons-listmerge-001",
       "source": "F",
       "tier": "planted",
@@ -70,6 +94,14 @@
       "policy": "__setitem__ must reset the underlying value list to [v] after _remove_all (not reuse add(), which appends to the stale list)"
     },
     {
+      "task_id": "boltons-parseflag-h-001",
+      "source": "H",
+      "tier": "planted",
+      "category": "set-membership",
+      "function": null,
+      "policy": "truthy set is exactly {'true','on'}"
+    },
+    {
       "task_id": "boltons-parseflag-001",
       "source": "F",
       "tier": "planted",
@@ -84,6 +116,14 @@
       "category": "mapping",
       "function": "pluralize",
       "policy": "formal/DB plurals person->persons, index->indexes, matrix->matrixes"
+    },
+    {
+      "task_id": "boltons-rounding-h-001",
+      "source": "H",
+      "tier": "planted",
+      "category": "numeric-policy",
+      "function": null,
+      "policy": "round half-cents DOWN (ROUND_HALF_DOWN)"
     },
     {
       "task_id": "boltons-rounding-001",

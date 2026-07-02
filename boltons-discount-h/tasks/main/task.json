@@ -1,0 +1,24 @@
+{
+  "task_id": "boltons-discount-h-001",
+  "codebase": "boltons-discount-h",
+  "build": "build.py",
+  "source": "H",
+  "tier": "planted",
+  "category": "ordering",
+  "module": "billing/discount.py",
+  "policy": "percent discounts apply before fixed-amount",
+  "bug_report": "Stacked discounts compute the wrong total. Two 50% discounts on $100 give $0 instead of $25 - they're applied to the original amount in parallel instead of compounding. Fix apply_discounts so stacked discounts combine correctly. A failing repro is at tests/test_regression.py.",
+  "cause_subject": "perf: simplify discount",
+  "fail_to_pass": [
+    "tests/test_regression.py"
+  ],
+  "pass_to_pass": [
+    "tests/test_discount.py"
+  ],
+  "hidden_to_pass": [
+    "tests/test_hidden.py"
+  ],
+  "regression_test_file": "regression_test.py",
+  "hidden_test_file": "hidden_test.py",
+  "non_guessable": "decision lives in git history (a documented commit), broken by a misleading 'perf' regression commit; git log/blame is the shortcut"
+}
