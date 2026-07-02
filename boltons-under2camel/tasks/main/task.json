@@ -4,6 +4,7 @@
   "build": "build.py",
   "source": "F",
   "tier": "real-function",
+  "category": "set-membership",
   "module": "boltons/strutils.py",
   "bug_report": "under2camel mangles our class names \u2014 'http_response' becomes 'HttpResponse' instead of 'HTTPResponse', so generated names don't match our codebase's acronym style. Make under2camel follow our style guide's acronym rules. A failing repro is at tests/test_regression.py.",
   "fail_to_pass": [

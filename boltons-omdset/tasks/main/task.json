@@ -4,6 +4,7 @@
   "build": "build.py",
   "source": "H",
   "tier": "real-function",
+  "category": "invariant",
   "module": "boltons/dictutils.py",
   "function": "OrderedMultiDict.__setitem__",
   "policy": "__setitem__ must reset the underlying value list to [v] after _remove_all (not reuse add(), which appends to the stale list)",

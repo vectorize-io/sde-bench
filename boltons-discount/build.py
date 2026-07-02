@@ -1,9 +1,9 @@
 import sys, os, shutil, subprocess
 from pathlib import Path
-sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "gen"))
+sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "gen"))
 from traps import TRAPS
 
-HOST = Path.home() / "dev" / "_sdebench_hosts" / "boltons"
+HOST = Path(os.environ.get("SDEBENCH_BOLTONS_HOST") or (Path.home() / "dev" / "_sdebench_hosts" / "boltons"))
 REF = '979fa9b613fa8c0a455ae16ea6f2ec91c11ecafe'
 TRAP = TRAPS['discount']
 

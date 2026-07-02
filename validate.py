@@ -6,7 +6,9 @@ import ast, json, sys
 from pathlib import Path
 
 DS = Path(__file__).resolve().parent  # tasks live at repo root
-REQ = ["task_id", "codebase", "build", "source", "tier", "module", "policy", "bug_report",
+sys.path.insert(0, str(DS / "gen"))
+from categories import CATEGORIES  # canonical decision-type taxonomy
+REQ = ["task_id", "codebase", "build", "source", "tier", "category", "module", "policy", "bug_report",
        "fail_to_pass", "pass_to_pass", "hidden_to_pass", "regression_test_file", "hidden_test_file"]
 problems = []
 tasks = sorted(DS.glob("boltons-*"))
@@ -31,6 +33,8 @@ for d in tasks:
                 problems.append(f"{d.name}: {tf} syntax error: {e}")
     if t.get("source") not in ("H", "F"):
         problems.append(f"{d.name}: source not in H/F")
+    if t.get("category") not in CATEGORIES:
+        problems.append(f"{d.name}: category '{t.get('category')}' not in {CATEGORIES}")
     if t.get("source") == "F" and not t.get("conversations"):
         problems.append(f"{d.name}: F source needs a chat (conversations)")
 
@@ -43,6 +47,9 @@ if man_ids != disk_ids:
 print(f"checked {len(tasks)} boltons tasks against {len(REQ)} required fields + tests + manifest")
 rf = sum(1 for d in tasks if json.loads((d/'tasks/main/task.json').read_text()).get('tier')=='real-function')
 print(f"  tiers: {rf} real-function, {len(tasks)-rf} planted")
+import collections as _c
+_cats = _c.Counter(json.loads((d/'tasks/main/task.json').read_text()).get('category') for d in tasks)
+print("  categories: " + ", ".join(f"{k}={v}" for k, v in sorted(_cats.items())))
 if problems:
     print(f"\n{len(problems)} PROBLEMS:")
     for p in problems:

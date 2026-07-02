@@ -42,6 +42,7 @@
     }
   ],
   "tier": "planted",
+  "category": "ordering",
   "module": "billing/discount.py",
   "function": "apply_discounts",
   "policy": "percent discounts apply before fixed-amount",

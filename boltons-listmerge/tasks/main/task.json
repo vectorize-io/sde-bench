@@ -66,6 +66,7 @@
     }
   ],
   "tier": "planted",
+  "category": "collection-merge",
   "module": "confmerge/merge.py",
   "function": "apply_updates",
   "policy": "union list values (de-duplicated, base order first)",

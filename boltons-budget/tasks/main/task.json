@@ -50,6 +50,7 @@
     }
   ],
   "tier": "planted",
+  "category": "numeric-policy",
   "module": "retryx/retry.py",
   "function": "MAX_ATTEMPTS",
   "policy": "exactly 7 (measured to the rate-limit window)",

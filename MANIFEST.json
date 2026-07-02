@@ -1,5 +1,5 @@
 {
-  "dataset": "sdebench-boltons",
+  "dataset": "sde-bench",
   "host": "boltons (github.com/mahmoud/boltons) @ 979fa9b",
   "n_tasks": 10,
   "by_source": {
@@ -10,11 +10,30 @@
     "planted": 5,
     "real-function": 5
   },
+  "by_category": {
+    "collection-merge": 1,
+    "filter-rule": 1,
+    "invariant": 1,
+    "mapping": 2,
+    "numeric-policy": 2,
+    "ordering": 1,
+    "set-membership": 2
+  },
+  "categories": [
+    "collection-merge",
+    "filter-rule",
+    "invariant",
+    "mapping",
+    "numeric-policy",
+    "ordering",
+    "set-membership"
+  ],
   "tasks": [
     {
       "task_id": "boltons-budget-001",
       "source": "F",
       "tier": "planted",
+      "category": "numeric-policy",
       "function": "MAX_ATTEMPTS",
       "policy": "exactly 7 (measured to the rate-limit window)"
     },
@@ -22,6 +41,7 @@
       "task_id": "boltons-discount-001",
       "source": "F",
       "tier": "planted",
+      "category": "ordering",
       "function": "apply_discounts",
       "policy": "percent discounts apply before fixed-amount"
     },
@@ -29,6 +49,7 @@
       "task_id": "boltons-findhashtags-001",
       "source": "F",
       "tier": "real-function",
+      "category": "filter-rule",
       "function": "find_hashtags",
       "policy": "drop all-numeric tags EXCEPT 4-digit years (1900-2099)"
     },
@@ -36,6 +57,7 @@
       "task_id": "boltons-listmerge-001",
       "source": "F",
       "tier": "planted",
+      "category": "collection-merge",
       "function": "apply_updates",
       "policy": "union list values (de-duplicated, base order first)"
     },
@@ -43,6 +65,7 @@
       "task_id": "boltons-omdset-001",
       "source": "H",
       "tier": "real-function",
+      "category": "invariant",
       "function": "OrderedMultiDict.__setitem__",
       "policy": "__setitem__ must reset the underlying value list to [v] after _remove_all (not reuse add(), which appends to the stale list)"
     },
@@ -50,6 +73,7 @@
       "task_id": "boltons-parseflag-001",
       "source": "F",
       "tier": "planted",
+      "category": "set-membership",
       "function": "parse_flag",
       "policy": "truthy set is exactly {'true','on'}"
     },
@@ -57,6 +81,7 @@
       "task_id": "boltons-pluralize-001",
       "source": "F",
       "tier": "real-function",
+      "category": "mapping",
       "function": "pluralize",
       "policy": "formal/DB plurals person->persons, index->indexes, matrix->matrixes"
     },
@@ -64,6 +89,7 @@
       "task_id": "boltons-rounding-001",
       "source": "F",
       "tier": "planted",
+      "category": "numeric-policy",
       "function": "round_cents",
       "policy": "round half-cents DOWN (ROUND_HALF_DOWN)"
     },
@@ -71,6 +97,7 @@
       "task_id": "boltons-slugify-001",
       "source": "F",
       "tier": "real-function",
+      "category": "mapping",
       "function": "slugify",
       "policy": "SEO symbol map & to and, $ to usd, % to pct"
     },
@@ -78,6 +105,7 @@
       "task_id": "boltons-under2camel-001",
       "source": "F",
       "tier": "real-function",
+      "category": "set-membership",
       "function": "under2camel",
       "policy": "acronym set {HTTP,API,SKU,GDPR} uppercase; db/sql/url stay title-cased"
     }

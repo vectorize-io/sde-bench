@@ -35,6 +35,16 @@ means per task depends on **where the decision lives**:
 - **planted** — a validated trap as a **new small module inside the real boltons repo** (so it still
   gets the real git-history noise + real-repo navigation), graded against its own tests. Controlled.
 
+## Axis 3 — category (the kind of decision)
+
+Orthogonal to source and tier: **what kind of non-guessable rule** the fix hinges on. The canonical
+taxonomy is `gen/categories.py`; `MANIFEST.json` groups by it (`by_category`). Reporting interventions
+per category shows *where* memory helps most.
+
+- **mapping** (slugify, pluralize) · **set-membership** (under2camel, parseflag) · **numeric-policy**
+  (rounding, budget) · **ordering** (discount) · **collection-merge** (listmerge) · **filter-rule**
+  (findhashtags) · **invariant** (omdset)
+
 ## Host & noise
 
 [boltons](https://github.com/mahmoud/boltons) (BSD, ~1600 commits, pinned at `979fa9b`) is the host,
@@ -44,21 +54,21 @@ ranking problem, not a lookup.
 
 ## Tasks (10)
 
-| task | source | tier | function | non-guessable policy |
-|---|---|---|---|---|
-| omdset | **H** | real-function | `dictutils.OrderedMultiDict.__setitem__` | find-the-bug: a `perf` commit rewrote `__setitem__` to reuse `add()` (appends to a stale value list) — must reset to `[v]`; symptom is a stale `getlist` two modules away, all 153 real tests pass; git blame/log is the shortcut |
-| slugify | F | real-function | `strutils.slugify` | symbol map `&→and, $→usd, %→pct` (not dollar/percent) |
-| pluralize | F | real-function | `strutils.pluralize` | `person→persons, index→indexes, matrix→matrixes` (not people/indices/matrices) |
-| under2camel | F | real-function | `strutils.under2camel` | acronym set `{HTTP,API,SKU,GDPR}` — incl. domain SKU/GDPR, **excludes** common db/url |
-| findhashtags | F | real-function | `strutils.find_hashtags` | drop all-numeric tags **except 4-digit years** (`#2024` stays) |
-| rounding | F | planted | `round_cents` | round half-cents **DOWN** (not banker's/half-up) |
-| listmerge | F | planted | `apply_updates` | **union** list values, deduped, base order (not replace/append) |
-| budget | F | planted | `MAX_ATTEMPTS` | exactly **7** (measured, not round) |
-| discount | F | planted | `apply_discounts` | **percent before fixed** stacking |
-| parseflag | F | planted | `parse_flag` | truthy set exactly `{"true","on"}` (not 1/yes) |
+| task | source | tier | category | function | non-guessable policy |
+|---|---|---|---|---|---|
+| omdset | **H** | real-function | invariant | `dictutils.OrderedMultiDict.__setitem__` | find-the-bug: a `perf` commit rewrote `__setitem__` to reuse `add()` (appends to a stale value list) — must reset to `[v]`; symptom is a stale `getlist` two modules away, all 153 real tests pass; git blame/log is the shortcut |
+| slugify | F | real-function | mapping | `strutils.slugify` | symbol map `&→and, $→usd, %→pct` (not dollar/percent) |
+| pluralize | F | real-function | mapping | `strutils.pluralize` | `person→persons, index→indexes, matrix→matrixes` (not people/indices/matrices) |
+| under2camel | F | real-function | set-membership | `strutils.under2camel` | acronym set `{HTTP,API,SKU,GDPR}` — incl. domain SKU/GDPR, **excludes** common db/url |
+| findhashtags | F | real-function | filter-rule | `strutils.find_hashtags` | drop all-numeric tags **except 4-digit years** (`#2024` stays) |
+| rounding | F | planted | numeric-policy | `round_cents` | round half-cents **DOWN** (not banker's/half-up) |
+| listmerge | F | planted | collection-merge | `apply_updates` | **union** list values, deduped, base order (not replace/append) |
+| budget | F | planted | numeric-policy | `MAX_ATTEMPTS` | exactly **7** (measured, not round) |
+| discount | F | planted | ordering | `apply_discounts` | **percent before fixed** stacking |
+| parseflag | F | planted | set-membership | `parse_flag` | truthy set exactly `{"true","on"}` (not 1/yes) |
 
-Per-task metadata is in each `task.json` (`source`, `tier`, `module`, `function`, `policy`,
-`non_guessable`); summary in `datasets/MANIFEST.json`.
+Per-task metadata is in each `task.json` (`source`, `tier`, `category`, `module`, `function`,
+`policy`, `non_guessable`); summary + `by_source`/`by_tier`/`by_category` counts in `MANIFEST.json`.
 
 ## Grading & metric
 

@@ -46,6 +46,7 @@
     }
   ],
   "tier": "planted",
+  "category": "numeric-policy",
   "module": "pay/rounding.py",
   "function": "round_cents",
   "policy": "round half-cents DOWN (ROUND_HALF_DOWN)",
