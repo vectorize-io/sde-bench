@@ -37,18 +37,22 @@ Each task is classified on three orthogonal axes: **source** (`H` git history / 
 
 ## Generate / add tasks
 
-The generator is vendored here so the dataset is self-contained (planted tasks' `build.py` import
-`gen/traps.py` at build time). It needs a local boltons clone as the host fixture:
+**Full guide: [`GENERATING.md`](GENERATING.md)** — the task model (the discrimination invariant),
+`planted` vs `real-function`, trap anatomy, and step-by-step for adding each kind.
+
+In short: a task = a bug whose *obvious* fix passes the repro but fails a hidden test (the
+non-guessable policy). You author a **trap** (`gen/realfn_traps.py` for real-function tasks,
+`gen/traps.py` for planted), give it a `category` in `gen/categories.py`, then **emit + validate**:
 
 ```bash
 git clone https://github.com/mahmoud/boltons ~/dev/_sdebench_hosts/boltons   # or set SDEBENCH_BOLTONS_HOST
 python gen/emit_realfn.py     # (re)emit + validate the real-function tasks
 python gen/emit_host.py       # (re)emit the planted tasks
+python validate.py            # structural check
 ```
 
-A new task = add a trap (`gen/realfn_traps.py` or `gen/traps.py`), its `category` in
-`gen/categories.py`, then emit. `gen/validate.py` proves discrimination (HEAD fails, correct passes,
-naive fails hidden).
+The generator is vendored here so the dataset is self-contained — planted tasks' `build.py` import
+`gen/traps.py` at build time, so `gen/` must ship with the data.
 
 ## Validate
 

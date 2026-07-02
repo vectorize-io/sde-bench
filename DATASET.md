@@ -30,10 +30,18 @@ means per task depends on **where the decision lives**:
 
 ## Axis 2 — tier (how the task is hosted)
 
-- **real-function** — the policy is planted on an *untested edge* of a **real boltons function**,
-  graded against boltons' **real test suite** (a fix must keep the library green). Authentic, harder.
-- **planted** — a validated trap as a **new small module inside the real boltons repo** (so it still
-  gets the real git-history noise + real-repo navigation), graded against its own tests. Controlled.
+Both tiers live **inside the real boltons repo** (real git-history noise + real-repo navigation). They
+differ in *what the buggy code is* and *what grades the fix*:
+
+- **real-function** — the policy sits on an *untested edge* of an **existing, real boltons function**
+  (e.g. `strutils.slugify`). Boltons' own code doesn't implement the project's policy — that gap **is**
+  the bug; the agent edits the real function. Graded against boltons' **real test suite** (must stay
+  green) + repro + hidden. Authentic and harder — nothing was fabricated for the agent.
+- **planted** — a validated trap as a **new small module written into the boltons repo** (e.g.
+  `retryx/retry.py`) with a buggy implementation at HEAD; the agent fixes that module. Graded against
+  the module's **own tests** + repro + hidden. Controlled — you author the code and tests.
+
+See `GENERATING.md` for how tasks are built and how to add one.
 
 ## Axis 3 — category (the kind of decision)
 
