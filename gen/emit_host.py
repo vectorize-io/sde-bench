@@ -1,6 +1,6 @@
 """Emit boltons-hosted tasks: plant a validated generator trap as a module INTO the real boltons
 repo (real history = retrieval noise; the agent navigates a real codebase). F source: the decision
-lives in the realistic chat (gen/sessions.json), summarized by memsys."""
+lives in the realistic chat (gen/sessions.json), ingested by the memory system under test."""
 import json, sys
 from pathlib import Path
 HERE = Path(__file__).resolve().parent

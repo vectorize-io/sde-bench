@@ -9,7 +9,7 @@ independent variable — and what each agent can *reach* is the whole point.
 
 ## What each arm can access (this is the experiment)
 
-| | plain agent (`full`) | agent + memory (`memsys`) |
+| | plain agent | agent + memory |
 |---|---|---|
 | the repo + its full git history | ✅ | ✅ |
 | a memory store of ingested git rationales + past chats, retrieved & surfaced | ❌ | ✅ |
@@ -88,20 +88,17 @@ Grading (Docker, pristine test copies): `pass_to_pass` (existing behaviour) + th
 Primary metric: **interventions** — on a failing grade the harness feeds back the failing-test output
 and resumes (cap 5). 0 = solved first try, no human help. Also: turns, cost, solve rate.
 
-## Memory system under test (`memsys`)
+## Memory & results
 
-Local, file-based (`sdebench/memsys/`): **ingest** git rationale commits + past chats (each verbose
-chat LLM-summarized into a decision note — "what was tried, rejected, decided") → **retrieve** by
-TF-IDF + a code-symbol boost → **surface** the top entries in the prompt. Not answer-injection: it
-surfaces the *decision* (verified no hidden-test values leak), and the agent still writes+tests the fix.
+The dataset is **memory-system-agnostic**: any system that ingests the project's knowledge (git
+rationale commits + past developer chats) and surfaces the relevant decision to the agent can be
+plugged in. A well-behaved system surfaces the *decision*, not the hidden-test values (no answer
+leakage) — the agent still writes and tests the fix.
 
-## Results
-
-**n=5, 84 runs, all solved, 0 legitimacy problems:** across the F suite, memory takes the plain
-agent's **56 interventions → 1**, cutting turns **46%**, on the real codebase with ~1500 real commits
-as noise. Every task discriminates (plain-agent 0.8–2.0 interventions/run). By category:
-`real-function 1.53 → 0.05` interventions/run, `planted 1.17 → 0.00`. Full table: `BOLTONS_SUITE.md`.
-(The H task's H-vs-F contrast — where the plain agent *can* reach the decision — is being measured.)
+Empirically the dataset discriminates: the plain agent needs interventions on essentially every task,
+and a memory system that surfaces the right decision drives interventions toward zero. Reproduction and
+per-arm results live in the runner,
+[open-memory-benchmark](https://github.com/vectorize-io/open-memory-benchmark).
 
 ## Validate & run
 
@@ -112,10 +109,10 @@ python validate.py            # 10 boltons-* tasks: fields, tests parse, manifes
 ```
 
 To actually run the benchmark (build each task's repo, drive an agent, grade in Docker, count
-interventions), use the harness in
+interventions), use the runner in
 [open-memory-benchmark](https://github.com/vectorize-io/open-memory-benchmark), which mounts this repo
 as a submodule at `sdebench/datasets` and runs e.g.
-`uv run python sdebench/harness/run.py --task sdebench/datasets/boltons-<name>/tasks/main/task.json --history {full|memsys}`.
+`uv run omb run --dataset sdebench --split boltons --mode coding --memory {none|hindsight-http}`.
 
 boltons is © Mahmoud Hashemi, BSD — used unmodified as a fixture. Traps, planted modules, tests,
 chats, and this datasheet are this project's.
