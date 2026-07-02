@@ -1,23 +1,23 @@
 {
   "dataset": "sde-bench",
   "host": "boltons (github.com/mahmoud/boltons) @ 979fa9b",
-  "n_tasks": 15,
+  "n_tasks": 19,
   "by_source": {
     "F": 9,
-    "H": 6
+    "H": 10
   },
   "by_tier": {
     "planted": 10,
-    "real-function": 5
+    "real-function": 9
   },
   "by_category": {
     "collection-merge": 2,
-    "filter-rule": 1,
+    "filter-rule": 2,
     "invariant": 1,
-    "mapping": 2,
+    "mapping": 4,
     "numeric-policy": 4,
     "ordering": 2,
-    "set-membership": 3
+    "set-membership": 4
   },
   "categories": [
     "collection-merge",
@@ -60,6 +60,14 @@
       "category": "ordering",
       "function": "apply_discounts",
       "policy": "percent discounts apply before fixed-amount"
+    },
+    {
+      "task_id": "boltons-findhashtags-h-001",
+      "source": "H",
+      "tier": "real-function",
+      "category": "filter-rule",
+      "function": null,
+      "policy": "drop all-numeric tags EXCEPT 4-digit years (1900-2099)"
     },
     {
       "task_id": "boltons-findhashtags-001",
@@ -110,6 +118,14 @@
       "policy": "truthy set is exactly {'true','on'}"
     },
     {
+      "task_id": "boltons-pluralize-h-001",
+      "source": "H",
+      "tier": "real-function",
+      "category": "mapping",
+      "function": null,
+      "policy": "formal/DB plurals person->persons, index->indexes, matrix->matrixes"
+    },
+    {
       "task_id": "boltons-pluralize-001",
       "source": "F",
       "tier": "real-function",
@@ -134,12 +150,28 @@
       "policy": "round half-cents DOWN (ROUND_HALF_DOWN)"
     },
     {
+      "task_id": "boltons-slugify-h-001",
+      "source": "H",
+      "tier": "real-function",
+      "category": "mapping",
+      "function": null,
+      "policy": "SEO symbol map & to and, $ to usd, % to pct"
+    },
+    {
       "task_id": "boltons-slugify-001",
       "source": "F",
       "tier": "real-function",
       "category": "mapping",
       "function": "slugify",
       "policy": "SEO symbol map & to and, $ to usd, % to pct"
+    },
+    {
+      "task_id": "boltons-under2camel-h-001",
+      "source": "H",
+      "tier": "real-function",
+      "category": "set-membership",
+      "function": null,
+      "policy": "acronym set {HTTP,API,SKU,GDPR} uppercase; db/sql/url stay title-cased"
     },
     {
       "task_id": "boltons-under2camel-001",

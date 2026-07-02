@@ -1,0 +1,24 @@
+{
+  "task_id": "boltons-slugify-h-001",
+  "codebase": "boltons-slugify-h",
+  "build": "build.py",
+  "source": "H",
+  "tier": "real-function",
+  "category": "mapping",
+  "module": "boltons/strutils.py",
+  "policy": "SEO symbol map & to and, $ to usd, % to pct",
+  "bug_report": "slugify is mangling product titles that contain symbols. 'R&D' slugifies to 'r-d' \u2014 the '&' is dropped entirely, which changed the search term and tanked the page's ranking. Symbols in titles (&, $, %) need to be preserved as the team's standard words in the slug, not stripped. A failing repro is at tests/test_regression.py. Fix boltons.strutils.slugify without breaking its existing behaviour.",
+  "cause_subject": "refactor: simplify strutils",
+  "fail_to_pass": [
+    "tests/test_regression.py"
+  ],
+  "pass_to_pass": [
+    "tests/test_strutils.py"
+  ],
+  "hidden_to_pass": [
+    "tests/test_hidden.py"
+  ],
+  "regression_test_file": "regression_test.py",
+  "hidden_test_file": "hidden_test.py",
+  "non_guessable": "the project policy was added in a documented commit then removed by a misleading 'refactor' regression; HEAD is stock boltons \u2014 git log/blame reveals the rule"
+}
