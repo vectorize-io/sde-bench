@@ -2,7 +2,7 @@
   "task_id": "boltons-findhashtags-001",
   "codebase": "boltons-findhashtags",
   "build": "build.py",
-  "source": "F",
+  "source": "conversation",
   "tier": "real-function",
   "category": "filter-rule",
   "module": "boltons/strutils.py",

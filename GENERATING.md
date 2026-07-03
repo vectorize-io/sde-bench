@@ -27,9 +27,9 @@ in memory. The generator's validators assert exactly this table for every task b
 Each task is tagged on three orthogonal axes (see `DATASET.md` for the full treatment):
 
 - **source** — where the deciding rationale lives:
-  - **H** — in the repo's **git history** (a real commit's rationale), later dropped by a regression.
+  - **`history`** — in the repo's **git history** (a real commit's rationale), later dropped by a regression.
     Reachable with `git log`/`blame`. Example: `boltons-omdset`.
-  - **F** — only in a past **developer conversation** (`task.json.conversations`), never written to the
+  - **`conversation`** — only in a past **developer chat** (`task.json.conversations`), never written to the
     repo. Unreachable without a memory system that captured the chat. (9 of 10 tasks.)
 - **tier** — how the trap is hosted (see next section).
 - **category** — the *kind* of decision (`gen/categories.py`): mapping, set-membership,
@@ -143,6 +143,6 @@ retrieval noise a memory system must rank against.
 ## Synthetic standalone tasks (optional, not in the published set)
 
 `gen/core.py` + `gen/emit.py` + `gen/validate.py` are an **older, boltons-free** path: they build a tiny
-standalone library repo and plant a trap into its git history (source **H**) or only its conversation
-(source **F**), emitting `gen-<trap>-<source>` dirs. The published dataset is entirely boltons-hosted,
+standalone library repo and plant a trap into its git history (source **`history`**) or only its conversation
+(source **`conversation`**), emitting `gen-<trap>-<source>` dirs. The published dataset is entirely boltons-hosted,
 so these aren't used, but the code is kept for authoring controlled synthetic tasks with full history.

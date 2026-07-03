@@ -1,6 +1,6 @@
 """Canonical task taxonomy: the KIND of non-guessable decision each task's fix hinges on.
 
-This is the dataset's `category` axis (orthogonal to source H/F and tier real-function/planted).
+This is the dataset's `category` axis (orthogonal to source (history/conversation) and tier real-function/planted).
 Single source of truth: the emitters write `category` into each task.json from CATEGORY, and the
 structural validator checks every task's category is in CATEGORIES. Keyed by short task name
 (the `boltons-<name>` suffix)."""

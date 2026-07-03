@@ -3,10 +3,10 @@
 **Does a coding agent benefit from a memory system?** A benchmark of bug-fix tasks whose correct
 solution hinges on a **non-guessable, project-specific decision**: the obvious fix passes the visible
 repro but fails a held-out hidden test. Where that decision *lives* — a real commit in the project's
-git history (**H**) or a past developer conversation (**F**) — is the independent variable, and what a
+git history (**`history`**) or a past developer conversation (**`conversation`**) — is the independent variable, and what a
 memory system can *reach* is the point.
 
-This repo is the **dataset** (10 tasks hosted in the real [boltons](https://github.com/mahmoud/boltons)
+This repo is the **dataset** (19 tasks hosted in the real [boltons](https://github.com/mahmoud/boltons)
 library). The runner/harness and the memory systems under test live in
 [open-memory-benchmark](https://github.com/vectorize-io/open-memory-benchmark), which consumes this
 repo as a git submodule.
@@ -17,7 +17,7 @@ repo as a git submodule.
 boltons-<name>/
   build.py                 # materializes the task's codebase (a boltons fork at 979fa9b)
   tasks/main/
-    task.json              # metadata: source (H/F), tier, category, module/function, policy, tests, conversations
+    task.json              # metadata: source (history/conversation), tier, category, module/function, policy, tests, conversations
     regression_test.py     # the visible repro (red at HEAD)
     hidden_test.py         # the held-out test the naive fix fails
   tasks/oracle/            # (some tasks) an upper-bound arm
@@ -30,7 +30,7 @@ gen/                       # the task generator (self-contained here) — traps,
 
 ## Axes
 
-Each task is classified on three orthogonal axes: **source** (`H` git history / `F` conversation),
+Each task is classified on three orthogonal axes: **source** (`history` = git history / `conversation` = past chat),
 **tier** (`real-function` / `planted`), and **category** — the *kind* of non-guessable decision
 (`mapping`, `set-membership`, `numeric-policy`, `ordering`, `collection-merge`, `filter-rule`,
 `invariant`). The canonical category taxonomy is `gen/categories.py`.

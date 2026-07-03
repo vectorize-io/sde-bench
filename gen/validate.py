@@ -54,11 +54,11 @@ def validate(trap, source):
         head_files = " ".join(p.read_text(errors="ignore") for p in out.rglob("*")
                               if p.is_file() and p.suffix == ".py" and "__pycache__" not in p.parts
                               and ".git" not in p.parts and "tests" not in p.parts).lower()
-        if source == "H":
+        if source == "history":
             chk["isolation_H"] = (marker in gitlog) and (marker not in (mod.read_text().lower()))
         elif source == "K":
             chk["isolation_K"] = marker in (out / "CONVENTIONS.md").read_text().lower()
-        elif source == "F":
+        elif source == "conversation":
             chk["isolation_F"] = (marker not in gitlog) and (marker not in head_files)
         return chk
     finally:
@@ -66,7 +66,7 @@ def validate(trap, source):
 
 
 def main():
-    sources = ["H", "F"]
+    sources = ["history", "conversation"]
     allok = True
     for name, trap in TRAPS.items():
         for src in sources:

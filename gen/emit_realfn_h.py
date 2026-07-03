@@ -1,7 +1,7 @@
 """Emit H-source variants of the real-function boltons tasks. The project policy is ADDED to the real
 function in a documented commit (the H source), then a misleading regression commit removes it — so
 HEAD is the stock boltons function (missing the policy) and the fix's rationale lives in git history.
-Graded against boltons' real test suite (pass_to_pass) + repro + hidden, reused from the F variants."""
+Graded against boltons' real test suite (pass_to_pass) + repro + hidden, reused from the conversation variants."""
 import json, sys
 from pathlib import Path
 HERE = Path(__file__).resolve().parent
@@ -78,7 +78,7 @@ if __name__ == "__main__":
 
 
 def emit(name):
-    cb = f"boltons-{name}-h"
+    cb = f"boltons-{name}-history"
     ds = DATASETS / cb / "tasks" / "main"
     ds.mkdir(parents=True, exist_ok=True)
     t = REALFN_TRAPS[name]
@@ -89,7 +89,7 @@ def emit(name):
     _f = DATASETS / f"boltons-{name}" / "tasks" / "main" / "task.json"
     policy = json.loads(_f.read_text()).get("policy", "") if _f.exists() else ""
     task = {
-        "task_id": f"{cb}-001", "codebase": cb, "build": "build.py", "source": "H", "tier": "real-function",
+        "task_id": f"{cb}-001", "codebase": cb, "build": "build.py", "source": "history", "tier": "real-function",
         "category": CATEGORY[name], "module": t["module"], "policy": policy, "bug_report": t["bug_report"],
         "cause_subject": "refactor: simplify " + Path(t["module"]).stem,
         "fail_to_pass": ["tests/test_regression.py"], "pass_to_pass": ["tests/" + k for k in t["keep_tests"]],

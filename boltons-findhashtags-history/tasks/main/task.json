@@ -1,0 +1,24 @@
+{
+  "task_id": "boltons-findhashtags-history-001",
+  "codebase": "boltons-findhashtags-history",
+  "build": "build.py",
+  "source": "history",
+  "tier": "real-function",
+  "category": "filter-rule",
+  "module": "boltons/strutils.py",
+  "policy": "drop all-numeric tags EXCEPT 4-digit years (1900-2099)",
+  "bug_report": "Our trending feed is cluttered with junk numeric tags like #42 \u2014 find_hashtags returns pure-number hashtags that aren't real tags. Clean it up to follow our platform's tag rules. A failing repro is at tests/test_regression.py.",
+  "cause_subject": "refactor: simplify strutils",
+  "fail_to_pass": [
+    "tests/test_regression.py"
+  ],
+  "pass_to_pass": [
+    "tests/test_strutils.py"
+  ],
+  "hidden_to_pass": [
+    "tests/test_hidden.py"
+  ],
+  "regression_test_file": "regression_test.py",
+  "hidden_test_file": "hidden_test.py",
+  "non_guessable": "the project policy was added in a documented commit then removed by a misleading 'refactor' regression; HEAD is stock boltons \u2014 git log/blame reveals the rule"
+}

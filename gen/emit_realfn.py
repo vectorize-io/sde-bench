@@ -50,7 +50,7 @@ def emit(name):
     (ds / "regression_test.py").write_text(t["repro_test"])
     (ds / "hidden_test.py").write_text(t["hidden_test"])
     task = {
-        "task_id": f"{cb}-001", "codebase": cb, "build": "build.py", "source": "F", "tier": "real-function",
+        "task_id": f"{cb}-001", "codebase": cb, "build": "build.py", "source": "conversation", "tier": "real-function",
         "category": CATEGORY[name],
         "module": t["module"], "bug_report": t["bug_report"],
         "fail_to_pass": ["tests/test_regression.py"], "pass_to_pass": ["tests/" + k for k in t["keep_tests"]],

@@ -48,7 +48,7 @@ def build(trap, source, out):
     w(f"{pkg}/__init__.py", f'"""{pkg} package."""\n')
     commit("scaffold project")
 
-    if source == "H":
+    if source == "history":
         # the correct policy + its rationale lived in git history...
         w(trap["module"], trap["correct"])
         w(f"{pkg}/__init__.py", trap["init"])
@@ -92,6 +92,6 @@ def task_spec(trap, source, codebase):
         "regression_test_file": "regression_test.py",
         "hidden_test_file": "hidden_test.py",
     }
-    if source == "F":
+    if source == "conversation":
         task["conversations"] = trap["conversation"]
     return task, trap["repro_test"], trap["hidden_test"]

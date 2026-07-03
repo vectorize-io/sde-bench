@@ -1,10 +1,10 @@
 """Emit H-source variants of the planted boltons tasks: the non-guessable decision lives in a GIT
 COMMIT (a documented-rationale commit), then a misleading regression commit breaks it — so the agent
-must read `git log`/`blame` to recover the fix (vs the F variants, where it lives in a chat).
+must read `git log`/`blame` to recover the fix (vs the conversation variants, where it lives in a chat).
 
 Per task we plant: (1) the CORRECT module + a documented decision commit (the H source), (2) a noise
 commit, (3) a regression commit (buggy code, misleading message). HEAD is buggy; existing+repro+hidden
-tests discriminate exactly like the F variants (reused verbatim). No conversations (source=H)."""
+tests discriminate exactly like the conversation variants (reused verbatim). No conversations (source=history)."""
 import json, sys
 from pathlib import Path
 HERE = Path(__file__).resolve().parent
@@ -92,7 +92,7 @@ if __name__ == "__main__":
 
 
 def emit(name):
-    cb = f"boltons-{name}-h"
+    cb = f"boltons-{name}-history"
     ds = DATASETS / cb / "tasks" / "main"
     ds.mkdir(parents=True, exist_ok=True)
     t = TRAPS[name]
@@ -103,7 +103,7 @@ def emit(name):
     _f = DATASETS / f"boltons-{name}" / "tasks" / "main" / "task.json"
     policy = json.loads(_f.read_text()).get("policy", "") if _f.exists() else ""
     task = {
-        "task_id": f"{cb}-001", "codebase": cb, "build": "build.py", "source": "H", "tier": "planted",
+        "task_id": f"{cb}-001", "codebase": cb, "build": "build.py", "source": "history", "tier": "planted",
         "category": CATEGORY[name], "module": t["module"], "policy": policy, "bug_report": t["bug_report"],
         "cause_subject": "perf: simplify " + Path(t["module"]).stem,
         "fail_to_pass": ["tests/test_regression.py"], "pass_to_pass": [f"tests/test_{name}.py"],

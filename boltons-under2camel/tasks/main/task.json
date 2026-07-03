@@ -2,7 +2,7 @@
   "task_id": "boltons-under2camel-001",
   "codebase": "boltons-under2camel",
   "build": "build.py",
-  "source": "F",
+  "source": "conversation",
   "tier": "real-function",
   "category": "set-membership",
   "module": "boltons/strutils.py",

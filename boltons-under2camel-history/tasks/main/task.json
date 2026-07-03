@@ -1,0 +1,24 @@
+{
+  "task_id": "boltons-under2camel-history-001",
+  "codebase": "boltons-under2camel-history",
+  "build": "build.py",
+  "source": "history",
+  "tier": "real-function",
+  "category": "set-membership",
+  "module": "boltons/strutils.py",
+  "policy": "acronym set {HTTP,API,SKU,GDPR} uppercase; db/sql/url stay title-cased",
+  "bug_report": "under2camel mangles our class names \u2014 'http_response' becomes 'HttpResponse' instead of 'HTTPResponse', so generated names don't match our codebase's acronym style. Make under2camel follow our style guide's acronym rules. A failing repro is at tests/test_regression.py.",
+  "cause_subject": "refactor: simplify strutils",
+  "fail_to_pass": [
+    "tests/test_regression.py"
+  ],
+  "pass_to_pass": [
+    "tests/test_strutils.py"
+  ],
+  "hidden_to_pass": [
+    "tests/test_hidden.py"
+  ],
+  "regression_test_file": "regression_test.py",
+  "hidden_test_file": "hidden_test.py",
+  "non_guessable": "the project policy was added in a documented commit then removed by a misleading 'refactor' regression; HEAD is stock boltons \u2014 git log/blame reveals the rule"
+}

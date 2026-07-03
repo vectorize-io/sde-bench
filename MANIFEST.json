@@ -3,8 +3,8 @@
   "host": "boltons (github.com/mahmoud/boltons) @ 979fa9b",
   "n_tasks": 19,
   "by_source": {
-    "F": 9,
-    "H": 10
+    "conversation": 9,
+    "history": 10
   },
   "by_tier": {
     "planted": 10,
@@ -30,8 +30,8 @@
   ],
   "tasks": [
     {
-      "task_id": "boltons-budget-h-001",
-      "source": "H",
+      "task_id": "boltons-budget-history-001",
+      "source": "history",
       "tier": "planted",
       "category": "numeric-policy",
       "function": null,
@@ -39,15 +39,15 @@
     },
     {
       "task_id": "boltons-budget-001",
-      "source": "F",
+      "source": "conversation",
       "tier": "planted",
       "category": "numeric-policy",
       "function": "MAX_ATTEMPTS",
       "policy": "exactly 7 (measured to the rate-limit window)"
     },
     {
-      "task_id": "boltons-discount-h-001",
-      "source": "H",
+      "task_id": "boltons-discount-history-001",
+      "source": "history",
       "tier": "planted",
       "category": "ordering",
       "function": null,
@@ -55,15 +55,15 @@
     },
     {
       "task_id": "boltons-discount-001",
-      "source": "F",
+      "source": "conversation",
       "tier": "planted",
       "category": "ordering",
       "function": "apply_discounts",
       "policy": "percent discounts apply before fixed-amount"
     },
     {
-      "task_id": "boltons-findhashtags-h-001",
-      "source": "H",
+      "task_id": "boltons-findhashtags-history-001",
+      "source": "history",
       "tier": "real-function",
       "category": "filter-rule",
       "function": null,
@@ -71,15 +71,15 @@
     },
     {
       "task_id": "boltons-findhashtags-001",
-      "source": "F",
+      "source": "conversation",
       "tier": "real-function",
       "category": "filter-rule",
       "function": "find_hashtags",
       "policy": "drop all-numeric tags EXCEPT 4-digit years (1900-2099)"
     },
     {
-      "task_id": "boltons-listmerge-h-001",
-      "source": "H",
+      "task_id": "boltons-listmerge-history-001",
+      "source": "history",
       "tier": "planted",
       "category": "collection-merge",
       "function": null,
@@ -87,7 +87,7 @@
     },
     {
       "task_id": "boltons-listmerge-001",
-      "source": "F",
+      "source": "conversation",
       "tier": "planted",
       "category": "collection-merge",
       "function": "apply_updates",
@@ -95,15 +95,15 @@
     },
     {
       "task_id": "boltons-omdset-001",
-      "source": "H",
+      "source": "history",
       "tier": "real-function",
       "category": "invariant",
       "function": "OrderedMultiDict.__setitem__",
       "policy": "__setitem__ must reset the underlying value list to [v] after _remove_all (not reuse add(), which appends to the stale list)"
     },
     {
-      "task_id": "boltons-parseflag-h-001",
-      "source": "H",
+      "task_id": "boltons-parseflag-history-001",
+      "source": "history",
       "tier": "planted",
       "category": "set-membership",
       "function": null,
@@ -111,15 +111,15 @@
     },
     {
       "task_id": "boltons-parseflag-001",
-      "source": "F",
+      "source": "conversation",
       "tier": "planted",
       "category": "set-membership",
       "function": "parse_flag",
       "policy": "truthy set is exactly {'true','on'}"
     },
     {
-      "task_id": "boltons-pluralize-h-001",
-      "source": "H",
+      "task_id": "boltons-pluralize-history-001",
+      "source": "history",
       "tier": "real-function",
       "category": "mapping",
       "function": null,
@@ -127,15 +127,15 @@
     },
     {
       "task_id": "boltons-pluralize-001",
-      "source": "F",
+      "source": "conversation",
       "tier": "real-function",
       "category": "mapping",
       "function": "pluralize",
       "policy": "formal/DB plurals person->persons, index->indexes, matrix->matrixes"
     },
     {
-      "task_id": "boltons-rounding-h-001",
-      "source": "H",
+      "task_id": "boltons-rounding-history-001",
+      "source": "history",
       "tier": "planted",
       "category": "numeric-policy",
       "function": null,
@@ -143,15 +143,15 @@
     },
     {
       "task_id": "boltons-rounding-001",
-      "source": "F",
+      "source": "conversation",
       "tier": "planted",
       "category": "numeric-policy",
       "function": "round_cents",
       "policy": "round half-cents DOWN (ROUND_HALF_DOWN)"
     },
     {
-      "task_id": "boltons-slugify-h-001",
-      "source": "H",
+      "task_id": "boltons-slugify-history-001",
+      "source": "history",
       "tier": "real-function",
       "category": "mapping",
       "function": null,
@@ -159,15 +159,15 @@
     },
     {
       "task_id": "boltons-slugify-001",
-      "source": "F",
+      "source": "conversation",
       "tier": "real-function",
       "category": "mapping",
       "function": "slugify",
       "policy": "SEO symbol map & to and, $ to usd, % to pct"
     },
     {
-      "task_id": "boltons-under2camel-h-001",
-      "source": "H",
+      "task_id": "boltons-under2camel-history-001",
+      "source": "history",
       "tier": "real-function",
       "category": "set-membership",
       "function": null,
@@ -175,7 +175,7 @@
     },
     {
       "task_id": "boltons-under2camel-001",
-      "source": "F",
+      "source": "conversation",
       "tier": "real-function",
       "category": "set-membership",
       "function": "under2camel",

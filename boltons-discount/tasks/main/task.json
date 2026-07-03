@@ -2,7 +2,7 @@
   "task_id": "boltons-discount-001",
   "codebase": "boltons-discount",
   "build": "build.py",
-  "source": "F",
+  "source": "conversation",
   "bug_report": "Stacked discounts compute the wrong total. Two 50% discounts on $100 give $0 instead of $25 - they're applied to the original amount in parallel instead of compounding. Fix apply_discounts so stacked discounts combine correctly. A failing repro is at tests/test_regression.py.",
   "fail_to_pass": [
     "tests/test_regression.py"

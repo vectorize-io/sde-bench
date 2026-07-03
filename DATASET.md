@@ -19,14 +19,14 @@ means per task depends on **where the decision lives**:
 
 ## Axis 1 — source (where the decision lives)
 
-- **H (git history)** — the decision is a real commit's rationale in the repo's history. The plain
-  agent *can* reach it (`git log`/`blame`) but often doesn't think to; memory surfaces it. **The fair
-  test: both arms can reach it; memory is about reliability, not access.**
-- **F (conversation)** — the decision was made in a past developer chat, never written into the repo.
+- **`history`** (git history) — the decision is a real commit's rationale in the repo's history. The
+  plain agent *can* reach it (`git log`/`blame`) but often doesn't think to; memory surfaces it. **The
+  fair test: both arms can reach it; memory is about reliability, not access.** (Note: a *strong* agent
+  like sonnet-5 reliably mines git history, so `history` tasks are easy for it — they discriminate mainly
+  for weaker agents.)
+- **`conversation`** — the decision was made in a past developer chat, never written into the repo.
   The plain agent *cannot* reach it at all; only a memory system that captured the chat can. **The
-  "memory is necessary" test.**
-- *(K = conventions doc: dropped — code decisions don't live in a CONVENTIONS.md, and most repos have
-  none. X = cross-feature sibling pattern: not yet built.)*
+  "memory is necessary" test** — and the better discriminator for strong agents.
 
 ## Axis 2 — tier (how the task is hosted)
 
@@ -60,20 +60,29 @@ used as a fixture (cloned, not vendored). Its **~1500 real commit subjects + rat
 the memory store as retrieval noise, plus decoy chats — so surfacing the right decision is a real
 ranking problem, not a lookup.
 
-## Tasks (10)
+## Tasks (19)
 
-| task | source | tier | category | function | non-guessable policy |
+| task | source | tier | category | module/fn | non-guessable policy |
 |---|---|---|---|---|---|
-| omdset | **H** | real-function | invariant | `dictutils.OrderedMultiDict.__setitem__` | find-the-bug: a `perf` commit rewrote `__setitem__` to reuse `add()` (appends to a stale value list) — must reset to `[v]`; symptom is a stale `getlist` two modules away, all 153 real tests pass; git blame/log is the shortcut |
-| slugify | F | real-function | mapping | `strutils.slugify` | symbol map `&→and, $→usd, %→pct` (not dollar/percent) |
-| pluralize | F | real-function | mapping | `strutils.pluralize` | `person→persons, index→indexes, matrix→matrixes` (not people/indices/matrices) |
-| under2camel | F | real-function | set-membership | `strutils.under2camel` | acronym set `{HTTP,API,SKU,GDPR}` — incl. domain SKU/GDPR, **excludes** common db/url |
-| findhashtags | F | real-function | filter-rule | `strutils.find_hashtags` | drop all-numeric tags **except 4-digit years** (`#2024` stays) |
-| rounding | F | planted | numeric-policy | `round_cents` | round half-cents **DOWN** (not banker's/half-up) |
-| listmerge | F | planted | collection-merge | `apply_updates` | **union** list values, deduped, base order (not replace/append) |
-| budget | F | planted | numeric-policy | `MAX_ATTEMPTS` | exactly **7** (measured, not round) |
-| discount | F | planted | ordering | `apply_discounts` | **percent before fixed** stacking |
-| parseflag | F | planted | set-membership | `parse_flag` | truthy set exactly `{"true","on"}` (not 1/yes) |
+| budget | conversation | planted | numeric-policy | `retryx/retry.py` | exactly 7 (measured to the rate-limit window) |
+| discount | conversation | planted | ordering | `billing/discount.py` | percent discounts apply before fixed-amount |
+| findhashtags | conversation | real-function | filter-rule | `boltons/strutils.py` | drop all-numeric tags EXCEPT 4-digit years (1900-2099) |
+| listmerge | conversation | planted | collection-merge | `confmerge/merge.py` | union list values (de-duplicated, base order first) |
+| parseflag | conversation | planted | set-membership | `cfg/flags.py` | truthy set is exactly {'true','on'} |
+| pluralize | conversation | real-function | mapping | `boltons/strutils.py` | formal/DB plurals person->persons, index->indexes, matrix->matrixes |
+| rounding | conversation | planted | numeric-policy | `pay/rounding.py` | round half-cents DOWN (ROUND_HALF_DOWN) |
+| slugify | conversation | real-function | mapping | `boltons/strutils.py` | SEO symbol map & to and, $ to usd, % to pct |
+| under2camel | conversation | real-function | set-membership | `boltons/strutils.py` | acronym set {HTTP,API,SKU,GDPR} uppercase; db/sql/url stay title-cased |
+| budget-history | history | planted | numeric-policy | `retryx/retry.py` | exactly 7 (measured to the rate-limit window) |
+| discount-history | history | planted | ordering | `billing/discount.py` | percent discounts apply before fixed-amount |
+| findhashtags-history | history | real-function | filter-rule | `boltons/strutils.py` | drop all-numeric tags EXCEPT 4-digit years (1900-2099) |
+| listmerge-history | history | planted | collection-merge | `confmerge/merge.py` | union list values (de-duplicated, base order first) |
+| omdset | history | real-function | invariant | `boltons/dictutils.py` | __setitem__ must reset the underlying value list to [v] after _remove_all (not reuse add() |
+| parseflag-history | history | planted | set-membership | `cfg/flags.py` | truthy set is exactly {'true','on'} |
+| pluralize-history | history | real-function | mapping | `boltons/strutils.py` | formal/DB plurals person->persons, index->indexes, matrix->matrixes |
+| rounding-history | history | planted | numeric-policy | `pay/rounding.py` | round half-cents DOWN (ROUND_HALF_DOWN) |
+| slugify-history | history | real-function | mapping | `boltons/strutils.py` | SEO symbol map & to and, $ to usd, % to pct |
+| under2camel-history | history | real-function | set-membership | `boltons/strutils.py` | acronym set {HTTP,API,SKU,GDPR} uppercase; db/sql/url stay title-cased |
 
 Per-task metadata is in each `task.json` (`source`, `tier`, `category`, `module`, `function`,
 `policy`, `non_guessable`); summary + `by_source`/`by_tier`/`by_category` counts in `MANIFEST.json`.

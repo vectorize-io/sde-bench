@@ -2,7 +2,7 @@
   "task_id": "boltons-slugify-001",
   "codebase": "boltons-slugify",
   "build": "build.py",
-  "source": "F",
+  "source": "conversation",
   "tier": "real-function",
   "category": "mapping",
   "module": "boltons/strutils.py",

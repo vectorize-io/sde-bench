@@ -2,7 +2,7 @@
   "task_id": "boltons-rounding-001",
   "codebase": "boltons-rounding",
   "build": "build.py",
-  "source": "F",
+  "source": "conversation",
   "bug_report": "Rounded amounts no longer match the legacy ledger. Half-cent amounts round the wrong way \u2014 e.g. 2.125 should be 2.12 but we produce 2.13. A failing repro is at tests/test_regression.py. Fix the rounding to match the ledger, without breaking existing behaviour.",
   "fail_to_pass": [
     "tests/test_regression.py"

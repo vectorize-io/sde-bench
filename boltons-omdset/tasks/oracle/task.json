@@ -2,7 +2,7 @@
   "task_id": "boltons-omdset-001",
   "codebase": "boltons-omdset",
   "build": "build.py",
-  "source": "H",
+  "source": "history",
   "tier": "real-function",
   "module": "boltons/dictutils.py",
   "function": "OrderedMultiDict.__setitem__",

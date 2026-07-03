@@ -2,7 +2,7 @@
   "task_id": "boltons-budget-001",
   "codebase": "boltons-budget",
   "build": "build.py",
-  "source": "F",
+  "source": "conversation",
   "bug_report": "The upstream is rate-limiting us \u2014 our Retrier retries well past where it should stop and crosses the rate-limit window. Restore the intended attempt budget. A failing repro is at tests/test_regression.py.",
   "fail_to_pass": [
     "tests/test_regression.py"

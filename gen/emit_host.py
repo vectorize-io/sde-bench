@@ -55,7 +55,7 @@ def emit(trap_name):
     (ds / "regression_test.py").write_text(trap["repro_test"])
     (ds / "hidden_test.py").write_text(trap["hidden_test"])
     task = {
-        "task_id": f"{cb}-001", "codebase": cb, "build": "build.py", "source": "F", "tier": "planted",
+        "task_id": f"{cb}-001", "codebase": cb, "build": "build.py", "source": "conversation", "tier": "planted",
         "category": CATEGORY[trap_name],
         "module": trap["module"], "bug_report": trap["bug_report"],
         "fail_to_pass": ["tests/test_regression.py"],
