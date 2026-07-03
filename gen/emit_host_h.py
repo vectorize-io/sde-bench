@@ -114,7 +114,11 @@ def emit(name):
         "non_guessable": "decision lives in git history (a documented commit), broken by a misleading "
                          "'perf' regression commit; git log/blame is the shortcut",
     }
-    (ds / "task.json").write_text(json.dumps(task, indent=2))
+    tj = ds / "task.json"
+    if tj.exists():  # preserve post-emission enrichment keys (function/policy/non_guessable/host, ...)
+        for k, v in json.loads(tj.read_text()).items():
+            task.setdefault(k, v)
+    tj.write_text(json.dumps(task, indent=2) + "\n")
     return cb
 
 

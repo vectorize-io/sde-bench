@@ -51,5 +51,9 @@
       "role": "assistant",
       "text": "Final policy: retry any 5xx and exactly 429/408 from 4xx; never any other 4xx; at most 4 attempts; backoff capped at 30 seconds."
     }
-  ]
+  ],
+  "function": "should_retry",
+  "policy": "retry 5xx plus exactly {429,408}; max 4 attempts; backoff cap 30s",
+  "non_guessable": "the {429,408} allowlist and 30s cap, not 5xx-only or 60s-cap which pass the repro",
+  "host": "boltons@979fa9b"
 }

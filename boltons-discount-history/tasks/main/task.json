@@ -6,7 +6,7 @@
   "tier": "planted",
   "category": "ordering",
   "module": "billing/discount.py",
-  "policy": "",
+  "policy": "percent discounts apply before fixed-amount",
   "bug_report": "Stacked discounts compute the wrong total. Two 50% discounts on $100 give $0 instead of $25 - they're applied to the original amount in parallel instead of compounding. Fix apply_discounts so stacked discounts combine correctly. A failing repro is at tests/test_regression.py.",
   "cause_subject": "perf: simplify discount",
   "fail_to_pass": [

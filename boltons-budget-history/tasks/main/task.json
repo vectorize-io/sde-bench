@@ -6,7 +6,7 @@
   "tier": "planted",
   "category": "numeric-policy",
   "module": "retryx/retry.py",
-  "policy": "",
+  "policy": "exactly 7 (measured to the rate-limit window)",
   "bug_report": "The upstream is rate-limiting us \u2014 our Retrier retries well past where it should stop and crosses the rate-limit window. Restore the intended attempt budget. A failing repro is at tests/test_regression.py.",
   "cause_subject": "perf: simplify retry",
   "fail_to_pass": [

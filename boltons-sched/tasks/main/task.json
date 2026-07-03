@@ -51,5 +51,9 @@
       "role": "assistant",
       "text": "Got it: drop the last-run tenant's jobs from consideration whenever another tenant is waiting, then pick by highest priority, then shorter est_runtime, then earlier submitted_at."
     }
-  ]
+  ],
+  "function": "next_job",
+  "policy": "priority desc; tie -> shorter est_runtime; same tenant never back-to-back",
+  "non_guessable": "runtime tie-break + strict tenant fairness, not FIFO/tie-only variants which pass the repro",
+  "host": "boltons@979fa9b"
 }

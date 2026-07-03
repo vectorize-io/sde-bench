@@ -81,7 +81,11 @@ def emit_amended(name):
         "function": spec["function"], "policy": spec["policy"],
         "non_guessable": spec["non_guessable"], "host": "boltons@979fa9b",
     }
-    (ds / "task.json").write_text(json.dumps(task, indent=2) + "\n")
+    tj = ds / "task.json"
+    if tj.exists():  # preserve post-emission enrichment keys
+        for k, v in json.loads(tj.read_text()).items():
+            task.setdefault(k, v)
+    tj.write_text(json.dumps(task, indent=2) + "\n")
     return cb
 
 

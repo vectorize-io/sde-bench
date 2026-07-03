@@ -51,5 +51,9 @@
       "role": "assistant",
       "text": "Got it - window_p95 sorts the window, removes the top 2 samples unconditionally, and returns the nearest-rank p95 of the remaining 58."
     }
-  ]
+  ],
+  "function": "window_p95",
+  "policy": "drop exactly the top 2 of each 60-sample window, then nearest-rank p95",
+  "non_guessable": "top-2 drop, not top-1 or a 5% trim which pass the repro",
+  "host": "boltons@979fa9b"
 }

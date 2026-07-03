@@ -6,7 +6,7 @@
   "tier": "planted",
   "category": "numeric-policy",
   "module": "pay/rounding.py",
-  "policy": "",
+  "policy": "round half-cents DOWN (ROUND_HALF_DOWN)",
   "bug_report": "Rounded amounts no longer match the legacy ledger. Half-cent amounts round the wrong way \u2014 e.g. 2.125 should be 2.12 but we produce 2.13. A failing repro is at tests/test_regression.py. Fix the rounding to match the ledger, without breaking existing behaviour.",
   "cause_subject": "perf: simplify rounding",
   "fail_to_pass": [

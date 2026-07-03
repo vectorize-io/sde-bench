@@ -6,7 +6,7 @@
   "tier": "planted",
   "category": "collection-merge",
   "module": "crmsync/dedupe.py",
-  "policy": "",
+  "policy": "dup key=(email.lower, same calendar day); most-filled wins; tie -> primary",
   "bug_report": "After a sync run the same contact shows up more than once in the merged list - records that are obviously the same person are both kept. A failing repro is at tests/test_regression.py. Fix merge_records so sync stops producing duplicate contacts, without breaking existing behaviour.",
   "cause_subject": "perf: simplify dedupe",
   "fail_to_pass": [
@@ -20,5 +20,7 @@
   ],
   "regression_test_file": "regression_test.py",
   "hidden_test_file": "hidden_test.py",
-  "non_guessable": "decision lives in git history (a documented commit), broken by a misleading 'perf' regression commit; git log/blame is the shortcut"
+  "non_guessable": "decision lives in git history (a documented commit), broken by a misleading 'perf' regression commit; git log/blame is the shortcut",
+  "function": "merge_records",
+  "host": "boltons@979fa9b"
 }

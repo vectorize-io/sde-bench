@@ -6,7 +6,7 @@
   "tier": "planted",
   "category": "numeric-policy",
   "module": "metricsagg/latency.py",
-  "policy": "",
+  "policy": "drop exactly the top 2 of each 60-sample window, then nearest-rank p95",
   "bug_report": "Since the last rollout, window_p95 reports latency well above what request traces show for the same interval - dashboards keep paging on-call for regressions the traces say aren't there. A failing repro is at tests/test_regression.py. Fix window_p95 so the reported number matches what we actually serve, without breaking existing behaviour.",
   "cause_subject": "perf: simplify latency",
   "fail_to_pass": [
@@ -20,5 +20,7 @@
   ],
   "regression_test_file": "regression_test.py",
   "hidden_test_file": "hidden_test.py",
-  "non_guessable": "decision lives in git history (a documented commit), broken by a misleading 'perf' regression commit; git log/blame is the shortcut"
+  "non_guessable": "decision lives in git history (a documented commit), broken by a misleading 'perf' regression commit; git log/blame is the shortcut",
+  "function": "window_p95",
+  "host": "boltons@979fa9b"
 }
