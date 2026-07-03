@@ -16,6 +16,13 @@ CATEGORY = {
     "listmerge": "collection-merge",  # how collections combine (union/dedup/order)
     "findhashtags": "filter-rule",  # a filter with a carve-out exception
     "omdset": "invariant",          # a data-structure invariant to preserve
+    # hard tier (multi-part policies; see traps_hard_a/b.py)
+    "dedupe": "collection-merge",   # dup key + conflict winner + tie-break
+    "trimstats": "numeric-policy",  # drop exactly top-2 then nearest-rank p95
+    "sched": "ordering",            # priority, runtime tie-break, tenant fairness
+    "redact": "filter-rule",        # suffix-match set + card last4 + email carve-out
+    "retryjitter": "set-membership",  # retryable statuses {5xx,429,408} + caps
+    "csvquote": "invariant",        # leading-zero round-trip via ="..." + CRLF
 }
 
 CATEGORIES = sorted(set(CATEGORY.values()))

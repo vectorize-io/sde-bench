@@ -1,0 +1,26 @@
+{
+  "task_id": "boltons-sched-history-001",
+  "codebase": "boltons-sched-history",
+  "build": "build.py",
+  "source": "history",
+  "tier": "planted",
+  "category": "ordering",
+  "module": "jobsched/picker.py",
+  "policy": "priority desc; tie -> shorter est_runtime; same tenant never back-to-back",
+  "bug_report": "The worker keeps picking the same customer's jobs consecutively - right after a run for a customer, next_job hands the worker another job from that same customer even though other customers are waiting, and support is fielding starvation complaints. A failing repro is at tests/test_regression.py. Fix next_job's selection so waiting customers get their turn, without breaking existing behaviour.",
+  "cause_subject": "perf: simplify picker",
+  "fail_to_pass": [
+    "tests/test_regression.py"
+  ],
+  "pass_to_pass": [
+    "tests/test_sched.py"
+  ],
+  "hidden_to_pass": [
+    "tests/test_hidden.py"
+  ],
+  "regression_test_file": "regression_test.py",
+  "hidden_test_file": "hidden_test.py",
+  "non_guessable": "runtime tie-break + strict tenant fairness, not FIFO/tie-only variants which pass the repro",
+  "function": "next_job",
+  "host": "boltons@979fa9b"
+}

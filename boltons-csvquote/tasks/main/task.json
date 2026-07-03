@@ -1,0 +1,59 @@
+{
+  "task_id": "boltons-csvquote-001",
+  "codebase": "boltons-csvquote",
+  "build": "build.py",
+  "source": "conversation",
+  "tier": "planted",
+  "category": "invariant",
+  "module": "erpexport/writer.py",
+  "bug_report": "The nightly export to the ERP is corrupting rows - any product description containing a comma spills into the next column and shifts everything after it. A failing repro is at tests/test_regression.py. Fix the export so field values arrive in the ERP intact, without breaking existing behaviour.",
+  "fail_to_pass": [
+    "tests/test_regression.py"
+  ],
+  "pass_to_pass": [
+    "tests/test_csvquote.py"
+  ],
+  "hidden_to_pass": [
+    "tests/test_hidden.py"
+  ],
+  "regression_test_file": "regression_test.py",
+  "hidden_test_file": "hidden_test.py",
+  "conversations": [
+    {
+      "role": "user",
+      "text": "The ERP import mangled our part numbers again \u2014 \"00042\" came in as \"42\" and the SKU lookups all broke."
+    },
+    {
+      "role": "assistant",
+      "text": "The importer is coercing digit fields to numbers. I'll switch the export to quote every field with standard CSV quotes \u2014 quoted values should be read as text."
+    },
+    {
+      "role": "user",
+      "text": "We tried exactly that last year \u2014 the ERP still coerces a quoted digit string to a number and strips the zeros. Ordinary quoting doesn't stop it."
+    },
+    {
+      "role": "assistant",
+      "text": "Then what form does the ERP actually keep verbatim?"
+    },
+    {
+      "role": "user",
+      "text": "Excel-style text formulas. A digit-only value with a leading zero has to be written as =\"00042\" \u2014 that's the only thing its parser imports byte-for-byte."
+    },
+    {
+      "role": "assistant",
+      "text": "Understood. Should I write every field in that formula form, to be safe?"
+    },
+    {
+      "role": "user",
+      "text": "No \u2014 only the leading-zero digit strings. Everything else is normal CSV with minimal quoting: quote a field only if it contains a comma, a quote, or a newline, and double any embedded quotes. And rows must end with \\r\\n \u2014 the ERP parser rejects bare \\n line endings."
+    },
+    {
+      "role": "assistant",
+      "text": "Final: digit-strings with a leading zero are written as =\"...\"; all other fields use minimal quoting with doubled embedded quotes; comma delimiter; CRLF row endings. Round-trip through the ERP preserves every value exactly."
+    }
+  ],
+  "function": "to_csv",
+  "policy": "leading-zero digit strings written as =\"...\" text form; minimal quoting; CRLF",
+  "non_guessable": "the =\"...\" text form + CRLF, not QUOTE_ALL which passes the repro",
+  "host": "boltons@979fa9b"
+}

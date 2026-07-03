@@ -1,0 +1,59 @@
+{
+  "task_id": "boltons-sched-001",
+  "codebase": "boltons-sched",
+  "build": "build.py",
+  "source": "conversation",
+  "tier": "planted",
+  "category": "ordering",
+  "module": "jobsched/picker.py",
+  "bug_report": "The worker keeps picking the same customer's jobs consecutively - right after a run for a customer, next_job hands the worker another job from that same customer even though other customers are waiting, and support is fielding starvation complaints. A failing repro is at tests/test_regression.py. Fix next_job's selection so waiting customers get their turn, without breaking existing behaviour.",
+  "fail_to_pass": [
+    "tests/test_regression.py"
+  ],
+  "pass_to_pass": [
+    "tests/test_sched.py"
+  ],
+  "hidden_to_pass": [
+    "tests/test_hidden.py"
+  ],
+  "regression_test_file": "regression_test.py",
+  "hidden_test_file": "hidden_test.py",
+  "conversations": [
+    {
+      "role": "user",
+      "text": "Customers keep complaining that their jobs sit forever while one big tenant's jobs run one after another. Separately, short jobs are getting stuck behind huge ones at the same priority."
+    },
+    {
+      "role": "assistant",
+      "text": "I'll add tenant fairness to next_job: on a priority tie, prefer a job from a different tenant than the one that just ran."
+    },
+    {
+      "role": "user",
+      "text": "Only on ties won't fix it - that tenant simply submits everything at priority 9 and still wins every slot. The rule has to be absolute: the same tenant never runs back-to-back."
+    },
+    {
+      "role": "assistant",
+      "text": "Absolute meaning we skip their job even when it's the highest priority in the queue?"
+    },
+    {
+      "role": "user",
+      "text": "Yes. If any other tenant has anything queued, the tenant that just ran is not eligible, full stop, whatever its priority. Only when the queue holds nothing but that tenant's jobs may it run again."
+    },
+    {
+      "role": "assistant",
+      "text": "Understood. And within the eligible jobs, highest priority first - with FIFO on ties, by submitted_at?"
+    },
+    {
+      "role": "user",
+      "text": "No, not FIFO. On a priority tie take the job with the shorter est_runtime first - that's what unblocks the quick jobs. Use submitted_at only when the runtimes tie too."
+    },
+    {
+      "role": "assistant",
+      "text": "Got it: drop the last-run tenant's jobs from consideration whenever another tenant is waiting, then pick by highest priority, then shorter est_runtime, then earlier submitted_at."
+    }
+  ],
+  "function": "next_job",
+  "policy": "priority desc; tie -> shorter est_runtime; same tenant never back-to-back",
+  "non_guessable": "runtime tie-break + strict tenant fairness, not FIFO/tie-only variants which pass the repro",
+  "host": "boltons@979fa9b"
+}

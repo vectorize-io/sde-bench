@@ -335,3 +335,9 @@ _sf = _Path(__file__).resolve().parent / "sessions.json"   # long LLM-generated 
 _SESS = _json.loads(_sf.read_text()) if _sf.exists() else {}
 for _n in TRAPS:
     TRAPS[_n]["conversation"] = _SESS.get(_n) or CONVERSATIONS.get(_n) or TRAPS[_n].get("conversation")
+
+# ── hard tier (2026-07 hardening): multi-part policies, wide hidden tests ──
+from traps_hard_a import TRAPS_HARD_A as _HARD_A
+from traps_hard_b import TRAPS_HARD_B as _HARD_B
+TRAPS.update(_HARD_A)
+TRAPS.update(_HARD_B)

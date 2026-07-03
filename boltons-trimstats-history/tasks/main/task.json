@@ -1,0 +1,26 @@
+{
+  "task_id": "boltons-trimstats-history-001",
+  "codebase": "boltons-trimstats-history",
+  "build": "build.py",
+  "source": "history",
+  "tier": "planted",
+  "category": "numeric-policy",
+  "module": "metricsagg/latency.py",
+  "policy": "drop exactly the top 2 of each 60-sample window, then nearest-rank p95",
+  "bug_report": "Since the last rollout, window_p95 reports latency well above what request traces show for the same interval - dashboards keep paging on-call for regressions the traces say aren't there. A failing repro is at tests/test_regression.py. Fix window_p95 so the reported number matches what we actually serve, without breaking existing behaviour.",
+  "cause_subject": "perf: simplify latency",
+  "fail_to_pass": [
+    "tests/test_regression.py"
+  ],
+  "pass_to_pass": [
+    "tests/test_trimstats.py"
+  ],
+  "hidden_to_pass": [
+    "tests/test_hidden.py"
+  ],
+  "regression_test_file": "regression_test.py",
+  "hidden_test_file": "hidden_test.py",
+  "non_guessable": "top-2 drop, not top-1 or a 5% trim which pass the repro",
+  "function": "window_p95",
+  "host": "boltons@979fa9b"
+}

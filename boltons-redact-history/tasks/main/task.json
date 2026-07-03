@@ -1,0 +1,26 @@
+{
+  "task_id": "boltons-redact-history-001",
+  "codebase": "boltons-redact-history",
+  "build": "build.py",
+  "source": "history",
+  "tier": "planted",
+  "category": "filter-rule",
+  "module": "logsafe/redact.py",
+  "policy": "suffix-match {password,token,api_key,ssn,card_number} recursively; card keeps last4; email stays",
+  "bug_report": "Customer secrets are showing up readable in the log pipeline - a nested request payload reached the aggregator with its user_password and api_key values in plain text. Only a couple of top-level fields ever get scrubbed. A failing repro is at tests/test_regression.py. Fix redact so secrets stop leaking into logs, without breaking existing behaviour.",
+  "cause_subject": "perf: simplify redact",
+  "fail_to_pass": [
+    "tests/test_regression.py"
+  ],
+  "pass_to_pass": [
+    "tests/test_redact.py"
+  ],
+  "hidden_to_pass": [
+    "tests/test_hidden.py"
+  ],
+  "regression_test_file": "regression_test.py",
+  "hidden_test_file": "hidden_test.py",
+  "non_guessable": "email carve-out + card last4, not full-masking which passes the repro",
+  "function": "redact",
+  "host": "boltons@979fa9b"
+}

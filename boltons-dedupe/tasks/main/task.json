@@ -1,0 +1,59 @@
+{
+  "task_id": "boltons-dedupe-001",
+  "codebase": "boltons-dedupe",
+  "build": "build.py",
+  "source": "conversation",
+  "tier": "planted",
+  "category": "collection-merge",
+  "module": "crmsync/dedupe.py",
+  "bug_report": "After a sync run the same contact shows up more than once in the merged list - records that are obviously the same person are both kept. A failing repro is at tests/test_regression.py. Fix merge_records so sync stops producing duplicate contacts, without breaking existing behaviour.",
+  "fail_to_pass": [
+    "tests/test_regression.py"
+  ],
+  "pass_to_pass": [
+    "tests/test_dedupe.py"
+  ],
+  "hidden_to_pass": [
+    "tests/test_hidden.py"
+  ],
+  "regression_test_file": "regression_test.py",
+  "hidden_test_file": "hidden_test.py",
+  "conversations": [
+    {
+      "role": "user",
+      "text": "After every sync run our CRM contact list has the same person two or three times, and the copy that survives is sometimes missing the phone and company we had before."
+    },
+    {
+      "role": "assistant",
+      "text": "merge_records only treats records as duplicates when email and the updated timestamp match exactly. I'll key duplicates on the lowercased email plus the calendar day of `updated`, and when two records clash keep the most recently updated one - the sync's newer data should win."
+    },
+    {
+      "role": "user",
+      "text": "The key is right - same email ignoring case, same day, that's one contact. But keep-latest is exactly what's been hollowing out records: the sync jobs strip fields, so the newest copy is often the emptiest."
+    },
+    {
+      "role": "assistant",
+      "text": "So on a clash, should the record already in the CRM always beat the incoming sync record?"
+    },
+    {
+      "role": "user",
+      "text": "No. Count the non-empty fields and keep whichever record has more - most-filled wins, no matter which side it came from or which is newer."
+    },
+    {
+      "role": "assistant",
+      "text": "And if both records have the same number of non-empty fields?"
+    },
+    {
+      "role": "user",
+      "text": "Then keep the one from primary - the CRM is the source of truth. And keep the order stable: primary records in their order, then the genuinely new incoming ones in theirs."
+    },
+    {
+      "role": "assistant",
+      "text": "Understood: duplicate = same email case-insensitively on the same day; the most-filled record wins a clash (empty strings don't count); a tie keeps the primary record; output is primary order, then new incoming."
+    }
+  ],
+  "function": "merge_records",
+  "policy": "dup key=(email.lower, same calendar day); most-filled wins; tie -> primary",
+  "non_guessable": "most-filled + primary tie-break, not keep-latest/incoming-wins which pass the repro",
+  "host": "boltons@979fa9b"
+}

@@ -30,7 +30,7 @@ Each task is tagged on three orthogonal axes (see `DATASET.md` for the full trea
   - **`history`** — in the repo's **git history** (a real commit's rationale), later dropped by a regression.
     Reachable with `git log`/`blame`. Example: `boltons-omdset`.
   - **`conversation`** — only in a past **developer chat** (`task.json.conversations`), never written to the
-    repo. Unreachable without a memory system that captured the chat. (9 of 10 tasks.)
+    repo. Unreachable without a memory system that captured the chat. (15 of 31 tasks.)
 - **tier** — how the trap is hosted (see next section).
 - **category** — the *kind* of decision (`gen/categories.py`): mapping, set-membership,
   numeric-policy, ordering, collection-merge, filter-rule, invariant.

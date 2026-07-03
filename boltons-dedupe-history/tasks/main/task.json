@@ -1,0 +1,26 @@
+{
+  "task_id": "boltons-dedupe-history-001",
+  "codebase": "boltons-dedupe-history",
+  "build": "build.py",
+  "source": "history",
+  "tier": "planted",
+  "category": "collection-merge",
+  "module": "crmsync/dedupe.py",
+  "policy": "dup key=(email.lower, same calendar day); most-filled wins; tie -> primary",
+  "bug_report": "After a sync run the same contact shows up more than once in the merged list - records that are obviously the same person are both kept. A failing repro is at tests/test_regression.py. Fix merge_records so sync stops producing duplicate contacts, without breaking existing behaviour.",
+  "cause_subject": "perf: simplify dedupe",
+  "fail_to_pass": [
+    "tests/test_regression.py"
+  ],
+  "pass_to_pass": [
+    "tests/test_dedupe.py"
+  ],
+  "hidden_to_pass": [
+    "tests/test_hidden.py"
+  ],
+  "regression_test_file": "regression_test.py",
+  "hidden_test_file": "hidden_test.py",
+  "non_guessable": "most-filled + primary tie-break, not keep-latest/incoming-wins which pass the repro",
+  "function": "merge_records",
+  "host": "boltons@979fa9b"
+}

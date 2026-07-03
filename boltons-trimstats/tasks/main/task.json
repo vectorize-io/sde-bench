@@ -1,0 +1,59 @@
+{
+  "task_id": "boltons-trimstats-001",
+  "codebase": "boltons-trimstats",
+  "build": "build.py",
+  "source": "conversation",
+  "tier": "planted",
+  "category": "numeric-policy",
+  "module": "metricsagg/latency.py",
+  "bug_report": "Since the last rollout, window_p95 reports latency well above what request traces show for the same interval - dashboards keep paging on-call for regressions the traces say aren't there. A failing repro is at tests/test_regression.py. Fix window_p95 so the reported number matches what we actually serve, without breaking existing behaviour.",
+  "fail_to_pass": [
+    "tests/test_regression.py"
+  ],
+  "pass_to_pass": [
+    "tests/test_trimstats.py"
+  ],
+  "hidden_to_pass": [
+    "tests/test_hidden.py"
+  ],
+  "regression_test_file": "regression_test.py",
+  "hidden_test_file": "hidden_test.py",
+  "conversations": [
+    {
+      "role": "user",
+      "text": "The latency dashboard's per-window p95 reads way above what we see in traces - every service on the new hypervisor pool is affected."
+    },
+    {
+      "role": "assistant",
+      "text": "Sounds like outliers skewing the percentile. I'll winsorize each window - clamp everything above the 99th percentile before taking the p95."
+    },
+    {
+      "role": "user",
+      "text": "We tried clamping in the collector and the number barely moved. It's not a statistical outlier problem - infra confirmed the hypervisor injects warmup spikes into every 60-sample window, a fixed number of them."
+    },
+    {
+      "role": "assistant",
+      "text": "Then I'll discard the single largest sample of each window before computing the p95."
+    },
+    {
+      "role": "user",
+      "text": "It's not one. There are exactly two warmup spikes per window - drop the top 2 samples, always two, then compute the p95 over the 58 that remain."
+    },
+    {
+      "role": "assistant",
+      "text": "Should that be conditional - only drop them when they look spiky, say above some threshold?"
+    },
+    {
+      "role": "user",
+      "text": "No, unconditional. Ops signed off on it: every window, drop the top 2, nearest-rank p95 on the remaining 58. Not top 1, not a 5% trim, not clamping."
+    },
+    {
+      "role": "assistant",
+      "text": "Got it - window_p95 sorts the window, removes the top 2 samples unconditionally, and returns the nearest-rank p95 of the remaining 58."
+    }
+  ],
+  "function": "window_p95",
+  "policy": "drop exactly the top 2 of each 60-sample window, then nearest-rank p95",
+  "non_guessable": "top-2 drop, not top-1 or a 5% trim which pass the repro",
+  "host": "boltons@979fa9b"
+}

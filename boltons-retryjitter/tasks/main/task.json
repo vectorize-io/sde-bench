@@ -1,0 +1,59 @@
+{
+  "task_id": "boltons-retryjitter-001",
+  "codebase": "boltons-retryjitter",
+  "build": "build.py",
+  "source": "conversation",
+  "tier": "planted",
+  "category": "set-membership",
+  "module": "httpretry/policy.py",
+  "bug_report": "Our auth service got hammered after a bad deploy - the HTTP client kept retrying calls that had failed with 401 Unauthorized, repeating the same doomed request until accounts locked out. Retrying cannot help a request the server has definitively refused. A failing repro is at tests/test_regression.py. Fix the retry decision without breaking existing behaviour.",
+  "fail_to_pass": [
+    "tests/test_regression.py"
+  ],
+  "pass_to_pass": [
+    "tests/test_retryjitter.py"
+  ],
+  "hidden_to_pass": [
+    "tests/test_hidden.py"
+  ],
+  "regression_test_file": "regression_test.py",
+  "hidden_test_file": "hidden_test.py",
+  "conversations": [
+    {
+      "role": "user",
+      "text": "During last night's incident we hammered our own auth service \u2014 the HTTP client kept retrying a request that failed with 401 over and over until accounts locked out."
+    },
+    {
+      "role": "assistant",
+      "text": "I'll restrict retries to 5xx server errors only \u2014 every 4xx is treated as a permanent failure and never retried."
+    },
+    {
+      "role": "user",
+      "text": "Too strict. There are exactly two 4xx codes we MUST keep retrying: 429, because the upstream rate-limits in bursts and backs off fine, and 408, request timeouts at their edge. Everything else in 4xx is permanent."
+    },
+    {
+      "role": "assistant",
+      "text": "Got it \u2014 retry any 5xx plus exactly {429, 408}, nothing else below 500. Should attempts stay unlimited with exponential backoff?"
+    },
+    {
+      "role": "user",
+      "text": "No \u2014 cap the whole thing at 4 attempts total. Past that we page a human instead."
+    },
+    {
+      "role": "assistant",
+      "text": "And the backoff ceiling \u2014 keep the old client's 60 seconds?"
+    },
+    {
+      "role": "user",
+      "text": "No, 30 seconds. The gateway load balancer kills idle connections at 32s, so any sleep past 30 just resumes onto a dead connection."
+    },
+    {
+      "role": "assistant",
+      "text": "Final policy: retry any 5xx and exactly 429/408 from 4xx; never any other 4xx; at most 4 attempts; backoff capped at 30 seconds."
+    }
+  ],
+  "function": "should_retry",
+  "policy": "retry 5xx plus exactly {429,408}; max 4 attempts; backoff cap 30s",
+  "non_guessable": "the {429,408} allowlist and 30s cap, not 5xx-only or 60s-cap which pass the repro",
+  "host": "boltons@979fa9b"
+}

@@ -1,0 +1,26 @@
+{
+  "task_id": "boltons-csvquote-history-001",
+  "codebase": "boltons-csvquote-history",
+  "build": "build.py",
+  "source": "history",
+  "tier": "planted",
+  "category": "invariant",
+  "module": "erpexport/writer.py",
+  "policy": "leading-zero digit strings written as =\"...\" text form; minimal quoting; CRLF",
+  "bug_report": "The nightly export to the ERP is corrupting rows - any product description containing a comma spills into the next column and shifts everything after it. A failing repro is at tests/test_regression.py. Fix the export so field values arrive in the ERP intact, without breaking existing behaviour.",
+  "cause_subject": "perf: simplify writer",
+  "fail_to_pass": [
+    "tests/test_regression.py"
+  ],
+  "pass_to_pass": [
+    "tests/test_csvquote.py"
+  ],
+  "hidden_to_pass": [
+    "tests/test_hidden.py"
+  ],
+  "regression_test_file": "regression_test.py",
+  "hidden_test_file": "hidden_test.py",
+  "non_guessable": "the =\"...\" text form + CRLF, not QUOTE_ALL which passes the repro",
+  "function": "to_csv",
+  "host": "boltons@979fa9b"
+}
