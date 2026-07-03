@@ -3,6 +3,9 @@
   "codebase": "boltons-listmerge",
   "build": "build.py",
   "source": "conversation",
+  "tier": "planted",
+  "category": "collection-merge",
+  "module": "confmerge/merge.py",
   "bug_report": "Partial config overlays clobber nested settings \u2014 apply_updates({'db': {'host': 'h', 'port': 5432}}, {'db': {'port': 5433}}) drops 'host'. Make nested overlays merge instead of replacing. A failing repro is at tests/test_regression.py.",
   "fail_to_pass": [
     "tests/test_regression.py"
@@ -64,12 +67,5 @@
       "role": "user",
       "text": "That's the one. Ship it."
     }
-  ],
-  "tier": "planted",
-  "category": "collection-merge",
-  "module": "confmerge/merge.py",
-  "function": "apply_updates",
-  "policy": "union list values (de-duplicated, base order first)",
-  "non_guessable": "union, not replace or naive-append",
-  "host": "boltons@979fa9b"
+  ]
 }

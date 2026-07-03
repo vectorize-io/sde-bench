@@ -51,9 +51,5 @@
       "role": "assistant",
       "text": "Final: digit-strings with a leading zero are written as =\"...\"; all other fields use minimal quoting with doubled embedded quotes; comma delimiter; CRLF row endings. Round-trip through the ERP preserves every value exactly."
     }
-  ],
-  "function": "to_csv",
-  "policy": "leading-zero digit strings written as =\"...\" text form; minimal quoting; CRLF",
-  "non_guessable": "the =\"...\" text form + CRLF, not QUOTE_ALL which passes the repro",
-  "host": "boltons@979fa9b"
+  ]
 }

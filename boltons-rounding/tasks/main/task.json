@@ -3,6 +3,9 @@
   "codebase": "boltons-rounding",
   "build": "build.py",
   "source": "conversation",
+  "tier": "planted",
+  "category": "numeric-policy",
+  "module": "pay/rounding.py",
   "bug_report": "Rounded amounts no longer match the legacy ledger. Half-cent amounts round the wrong way \u2014 e.g. 2.125 should be 2.12 but we produce 2.13. A failing repro is at tests/test_regression.py. Fix the rounding to match the ledger, without breaking existing behaviour.",
   "fail_to_pass": [
     "tests/test_regression.py"
@@ -44,12 +47,5 @@
       "role": "user",
       "text": "Perfect, that reconciles. Thanks."
     }
-  ],
-  "tier": "planted",
-  "category": "numeric-policy",
-  "module": "pay/rounding.py",
-  "function": "round_cents",
-  "policy": "round half-cents DOWN (ROUND_HALF_DOWN)",
-  "non_guessable": "half-down, not banker's/half-up which both pass the repro",
-  "host": "boltons@979fa9b"
+  ]
 }

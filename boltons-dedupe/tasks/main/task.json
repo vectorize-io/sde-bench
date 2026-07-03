@@ -51,9 +51,5 @@
       "role": "assistant",
       "text": "Understood: duplicate = same email case-insensitively on the same day; the most-filled record wins a clash (empty strings don't count); a tie keeps the primary record; output is primary order, then new incoming."
     }
-  ],
-  "function": "merge_records",
-  "policy": "dup key=(email.lower, same calendar day); most-filled wins; tie -> primary",
-  "non_guessable": "most-filled + primary tie-break, not keep-latest/incoming-wins which pass the repro",
-  "host": "boltons@979fa9b"
+  ]
 }

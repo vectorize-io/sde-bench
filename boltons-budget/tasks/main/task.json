@@ -3,6 +3,9 @@
   "codebase": "boltons-budget",
   "build": "build.py",
   "source": "conversation",
+  "tier": "planted",
+  "category": "numeric-policy",
+  "module": "retryx/retry.py",
   "bug_report": "The upstream is rate-limiting us \u2014 our Retrier retries well past where it should stop and crosses the rate-limit window. Restore the intended attempt budget. A failing repro is at tests/test_regression.py.",
   "fail_to_pass": [
     "tests/test_regression.py"
@@ -48,12 +51,5 @@
       "role": "user",
       "text": "Right, leave it at 7."
     }
-  ],
-  "tier": "planted",
-  "category": "numeric-policy",
-  "module": "retryx/retry.py",
-  "function": "MAX_ATTEMPTS",
-  "policy": "exactly 7 (measured to the rate-limit window)",
-  "non_guessable": "a measured non-round value the repro only bounds, not pins",
-  "host": "boltons@979fa9b"
+  ]
 }

@@ -6,7 +6,7 @@
   "tier": "planted",
   "category": "set-membership",
   "module": "cfg/flags.py",
-  "policy": "truthy set is exactly {'true','on'}",
+  "policy": "",
   "bug_report": "Feature flags are inconsistent - parse_flag treats '1', 'yes', 'on' as true and is case-insensitive, so values that shouldn't enable a feature are turning it on. Tighten parse_flag to the project's intended truthy value. A failing repro is at tests/test_regression.py.",
   "cause_subject": "perf: simplify flags",
   "fail_to_pass": [

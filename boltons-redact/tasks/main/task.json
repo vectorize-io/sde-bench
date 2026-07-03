@@ -51,9 +51,5 @@
       "role": "assistant",
       "text": "Final rule: normalize the key (lowercase, non-alnum -> underscore); sensitive if it ends with password, token, api_key, ssn, or card_number; value becomes '***', except card_number which keeps its last4 as '***1234'; email is never masked; applied recursively through nested dicts and lists."
     }
-  ],
-  "function": "redact",
-  "policy": "suffix-match {password,token,api_key,ssn,card_number} recursively; card keeps last4; email stays",
-  "non_guessable": "email carve-out + card last4, not full-masking which passes the repro",
-  "host": "boltons@979fa9b"
+  ]
 }

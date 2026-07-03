@@ -6,7 +6,7 @@
   "tier": "planted",
   "category": "collection-merge",
   "module": "confmerge/merge.py",
-  "policy": "union list values (de-duplicated, base order first)",
+  "policy": "",
   "bug_report": "Partial config overlays clobber nested settings \u2014 apply_updates({'db': {'host': 'h', 'port': 5432}}, {'db': {'port': 5433}}) drops 'host'. Make nested overlays merge instead of replacing. A failing repro is at tests/test_regression.py.",
   "cause_subject": "perf: simplify merge",
   "fail_to_pass": [
