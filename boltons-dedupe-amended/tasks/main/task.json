@@ -1,0 +1,63 @@
+{
+  "task_id": "boltons-dedupe-amended-001",
+  "codebase": "boltons-dedupe-amended",
+  "build": "build.py",
+  "source": "conversation-amended",
+  "tier": "planted",
+  "category": "collection-merge",
+  "module": "crmsync/dedupe.py",
+  "bug_report": "After a sync run the same contact shows up more than once in the merged list - records that are obviously the same person are both kept. A failing repro is at tests/test_regression.py. Fix merge_records so sync stops producing duplicate contacts, without breaking existing behaviour.",
+  "fail_to_pass": [
+    "tests/test_regression.py"
+  ],
+  "pass_to_pass": [
+    "tests/test_dedupe.py"
+  ],
+  "hidden_to_pass": [
+    "tests/test_hidden.py"
+  ],
+  "regression_test_file": "regression_test.py",
+  "hidden_test_file": "hidden_test.py",
+  "conversations": [
+    [
+      {
+        "role": "user",
+        "text": "The contact list keeps growing duplicates after every sync run \u2014 same person twice with the email cased differently, or two entries from the same day."
+      },
+      {
+        "role": "assistant",
+        "text": "Then equality on the raw (email, updated) pair is too strict. I'd key duplicates on the lowercased email plus the calendar day of the update \u2014 same address on the same day is the same contact."
+      },
+      {
+        "role": "user",
+        "text": "Right. And when two records collide, keep the newer one \u2014 latest updated timestamp wins."
+      },
+      {
+        "role": "assistant",
+        "text": "Settled: merge_records keys on (email lowercased, same calendar day) and resolves collisions by keeping the record with the latest updated timestamp."
+      }
+    ],
+    [
+      {
+        "role": "user",
+        "text": "Amendment to the merge rule from last month. The nightly sync job started sending stripped-down records \u2014 email and little else \u2014 and because they're newer, keep-latest is wiping names and phone numbers we already had."
+      },
+      {
+        "role": "assistant",
+        "text": "So recency is the wrong signal here. The natural fix: on a collision keep the record with MORE non-empty fields \u2014 the fuller record survives regardless of which is newer."
+      },
+      {
+        "role": "user",
+        "text": "Exactly. And if both have the same number of filled fields, keep ours \u2014 the CRM side is the source of truth, not the incoming feed."
+      },
+      {
+        "role": "assistant",
+        "text": "Amended rule, superseding keep-latest: duplicate key stays (lowercased email, same calendar day); on collision the most-filled record wins; on a filled-count tie the primary/CRM-side record is kept."
+      }
+    ]
+  ],
+  "function": "merge_records",
+  "policy": "dup key=(email.lower, same day); most-filled wins; tie -> primary (post-amendment)",
+  "non_guessable": "the AMENDED conflict rule (keep-latest -> most-filled + primary tie-break); chat-A's keep-latest passes the repro but fails hidden",
+  "host": "boltons@979fa9b"
+}

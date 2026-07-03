@@ -27,6 +27,11 @@ means per task depends on **where the decision lives**:
 - **`conversation`** — the decision was made in a past developer chat, never written into the repo.
   The plain agent *cannot* reach it at all; only a memory system that captured the chat can. **The
   "memory is necessary" test** — and the better discriminator for strong agents.
+- **`conversation-amended`** — the decision was settled in an EARLY chat and **amended in a later
+  one**; only the amended rule is correct, and the pre-amendment rule is deliberately one of the
+  task's proven naive fixes. Tests **cross-chat consolidation**: a memory system that surfaces the
+  stale first decision fails the hidden test exactly like a guesser. Both chats are available to
+  both arms (seeded sessions for the plain agent; ingested for memory).
 
 ## Axis 2 — tier (how the task is hosted)
 

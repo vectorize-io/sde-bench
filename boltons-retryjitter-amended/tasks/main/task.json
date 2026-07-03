@@ -1,0 +1,75 @@
+{
+  "task_id": "boltons-retryjitter-amended-001",
+  "codebase": "boltons-retryjitter-amended",
+  "build": "build.py",
+  "source": "conversation-amended",
+  "tier": "planted",
+  "category": "set-membership",
+  "module": "httpretry/policy.py",
+  "bug_report": "Our auth service got hammered after a bad deploy - the HTTP client kept retrying calls that had failed with 401 Unauthorized, repeating the same doomed request until accounts locked out. Retrying cannot help a request the server has definitively refused. A failing repro is at tests/test_regression.py. Fix the retry decision without breaking existing behaviour.",
+  "fail_to_pass": [
+    "tests/test_regression.py"
+  ],
+  "pass_to_pass": [
+    "tests/test_retryjitter.py"
+  ],
+  "hidden_to_pass": [
+    "tests/test_hidden.py"
+  ],
+  "regression_test_file": "regression_test.py",
+  "hidden_test_file": "hidden_test.py",
+  "conversations": [
+    [
+      {
+        "role": "user",
+        "text": "Post-mortem action item from last night: the client retried every failed call, including 401s, and locked a bunch of accounts. We need a retry policy that stops that."
+      },
+      {
+        "role": "assistant",
+        "text": "Agreed \u2014 retrying non-transient failures is the bug. I'd retry only server-side errors: any 5xx gets retried, 4xx doesn't."
+      },
+      {
+        "role": "user",
+        "text": "Almost \u2014 the upstream rate-limits us in bursts, so 429 has to be retryable too or we drop work every spike."
+      },
+      {
+        "role": "assistant",
+        "text": "Makes sense. So: retry any 5xx plus 429; every other 4xx is permanent and fails fast. How many attempts and what backoff ceiling?"
+      },
+      {
+        "role": "user",
+        "text": "Four attempts total, and cap the exponential backoff at 60 seconds."
+      },
+      {
+        "role": "assistant",
+        "text": "Settled: should_retry allows 5xx and 429 only, at most 4 attempts, backoff sleeps capped at 60 seconds."
+      }
+    ],
+    [
+      {
+        "role": "user",
+        "text": "Two updates to the retry policy we settled a while back. First: the upstream's edge now times out slow requests \u2014 we're seeing 408s for calls that succeed on a second try, and we currently fail them fast."
+      },
+      {
+        "role": "assistant",
+        "text": "So 408 joins the retryable set: any 5xx, plus exactly 429 and 408 from the 4xx range. Everything else in 4xx still fails fast. What's the second update?"
+      },
+      {
+        "role": "user",
+        "text": "Networking swapped the gateway LB and it kills idle connections at 32 seconds, so our 60-second backoff ceiling now dies mid-wait. Cap it at 30."
+      },
+      {
+        "role": "assistant",
+        "text": "Understood \u2014 amending the policy: retry any 5xx plus exactly {429, 408}; still at most 4 attempts total; backoff now caps at 30 seconds (under the LB's 32s idle kill), superseding the old 60-second cap."
+      },
+      {
+        "role": "user",
+        "text": "That's the rule going forward, yes."
+      }
+    ]
+  ],
+  "function": "should_retry",
+  "policy": "retry 5xx plus exactly {429,408}; max 4 attempts; backoff cap 30s (post-amendment)",
+  "non_guessable": "the AMENDED rule (adds 408, cap 60->30); the chat-A rule passes the repro but fails hidden",
+  "host": "boltons@979fa9b"
+}

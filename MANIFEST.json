@@ -1,23 +1,24 @@
 {
  "dataset": "sde-bench",
  "host": "boltons (github.com/mahmoud/boltons) @ 979fa9b",
- "n_tasks": 31,
+ "n_tasks": 33,
  "by_source": {
   "conversation": 15,
+  "conversation-amended": 2,
   "history": 16
  },
  "by_tier": {
-  "planted": 22,
+  "planted": 24,
   "real-function": 9
  },
  "by_category": {
-  "collection-merge": 4,
+  "collection-merge": 5,
   "filter-rule": 4,
   "invariant": 3,
   "mapping": 4,
   "numeric-policy": 6,
   "ordering": 4,
-  "set-membership": 6
+  "set-membership": 7
  },
  "categories": [
   "collection-merge",
@@ -68,6 +69,14 @@
    "category": "collection-merge",
    "function": "merge_records",
    "policy": "dup key=(email.lower, same calendar day); most-filled wins; tie -> primary"
+  },
+  {
+   "task_id": "boltons-dedupe-amended-001",
+   "source": "conversation-amended",
+   "tier": "planted",
+   "category": "collection-merge",
+   "function": "merge_records",
+   "policy": "dup key=(email.lower, same day); most-filled wins; tie -> primary (post-amendment)"
   },
   {
    "task_id": "boltons-dedupe-history-001",
@@ -188,6 +197,14 @@
    "category": "set-membership",
    "function": "should_retry",
    "policy": "retry 5xx plus exactly {429,408}; max 4 attempts; backoff cap 30s"
+  },
+  {
+   "task_id": "boltons-retryjitter-amended-001",
+   "source": "conversation-amended",
+   "tier": "planted",
+   "category": "set-membership",
+   "function": "should_retry",
+   "policy": "retry 5xx plus exactly {429,408}; max 4 attempts; backoff cap 30s (post-amendment)"
   },
   {
    "task_id": "boltons-retryjitter-history-001",
