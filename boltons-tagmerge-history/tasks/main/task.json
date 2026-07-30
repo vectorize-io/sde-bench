@@ -1,0 +1,26 @@
+{
+  "task_id": "boltons-tagmerge-history-001",
+  "codebase": "boltons-tagmerge-history",
+  "build": "build.py",
+  "source": "history",
+  "tier": "planted",
+  "category": "collection-merge",
+  "module": "labelsync/tags.py",
+  "policy": "precedence-ordered case-insensitive union keeping the first (highest-precedence) casing, first-occurrence order; '-name' tombstones suppress the tag in lower-precedence sources only, never a higher-precedence assert; tombstones never in output, unmatched ones silently ignored",
+  "bug_report": "After the source-of-truth migration, resources show tags ops explicitly removed, and some tags appear twice with different capitalization; there are also literal dash-prefixed junk tags in the UI. A failing repro is at tests/test_regression.py. Fix merge_tags so the merged list reflects what the sources actually assert, without breaking existing behaviour.",
+  "cause_subject": "perf: simplify tags",
+  "fail_to_pass": [
+    "tests/test_regression.py"
+  ],
+  "pass_to_pass": [
+    "tests/test_tagmerge.py"
+  ],
+  "hidden_to_pass": [
+    "tests/test_hidden.py"
+  ],
+  "regression_test_file": "regression_test.py",
+  "hidden_test_file": "hidden_test.py",
+  "non_guessable": "decision lives in git history (a documented commit), broken by a misleading 'perf' regression commit; git log/blame is the shortcut",
+  "function": "merge_tags",
+  "host": "boltons@979fa9b"
+}

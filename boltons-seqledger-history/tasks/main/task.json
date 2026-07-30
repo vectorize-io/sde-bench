@@ -1,0 +1,26 @@
+{
+  "task_id": "boltons-seqledger-history-001",
+  "codebase": "boltons-seqledger-history",
+  "build": "build.py",
+  "source": "history",
+  "tier": "planted",
+  "category": "invariant",
+  "module": "auditlog/ledger.py",
+  "policy": "per-tenant seq exactly last+1 (empty trail = 0, gaps raise SequenceGapError); compaction events must advance by EXACTLY +100 (archiver batch size), any other jump rejected; duplicate seq is a no-op (False) only on matching payload_hash, mismatch raises SequenceConflictError",
+  "bug_report": "Compliance export flagged our audit trail: month-end reconciliation shows missing entries, and one incident's record differs between the primary and the replica export. A failing repro is at tests/test_regression.py. Fix append_event so the audit trail stays complete and consistent, without breaking existing behaviour.",
+  "cause_subject": "perf: simplify ledger",
+  "fail_to_pass": [
+    "tests/test_regression.py"
+  ],
+  "pass_to_pass": [
+    "tests/test_seqledger.py"
+  ],
+  "hidden_to_pass": [
+    "tests/test_hidden.py"
+  ],
+  "regression_test_file": "regression_test.py",
+  "hidden_test_file": "hidden_test.py",
+  "non_guessable": "decision lives in git history (a documented commit), broken by a misleading 'perf' regression commit; git log/blame is the shortcut",
+  "function": "append_event",
+  "host": "boltons@979fa9b"
+}

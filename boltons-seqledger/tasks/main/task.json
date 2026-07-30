@@ -1,0 +1,91 @@
+{
+  "task_id": "boltons-seqledger-001",
+  "codebase": "boltons-seqledger",
+  "build": "build.py",
+  "source": "conversation",
+  "tier": "planted",
+  "category": "invariant",
+  "module": "auditlog/ledger.py",
+  "bug_report": "Compliance export flagged our audit trail: month-end reconciliation shows missing entries, and one incident's record differs between the primary and the replica export. A failing repro is at tests/test_regression.py. Fix append_event so the audit trail stays complete and consistent, without breaking existing behaviour.",
+  "fail_to_pass": [
+    "tests/test_regression.py"
+  ],
+  "pass_to_pass": [
+    "tests/test_seqledger.py"
+  ],
+  "hidden_to_pass": [
+    "tests/test_hidden.py"
+  ],
+  "regression_test_file": "regression_test.py",
+  "hidden_test_file": "hidden_test.py",
+  "conversations": [
+    {
+      "role": "user",
+      "text": "Compliance ran the quarterly export against the audit ledger and flagged us: month-end reconciliation shows entries missing from some tenants' trails, and for one incident the record in the primary export doesn't match what the replica export shows. Legal is involved now, so this needs to be right, not fast."
+    },
+    {
+      "role": "assistant",
+      "text": "Looking at append_event: it accepts any seq greater than the tenant's last one - a lost message just becomes a silent hole - and when a seq arrives twice it overwrites the stored event in place, which is how primary and replica can end up disagreeing depending on delivery order. I'd make seq strictly consecutive and turn any duplicate into an idempotent no-op."
+    },
+    {
+      "role": "user",
+      "text": "Strictly consecutive, yes: each tenant's seq must be exactly last + 1, and a gap has to be rejected loudly at write time - raise SequenceGapError, don't log-and-accept. But park the duplicate half of your plan for a moment, there's more to it than a blanket no-op."
+    },
+    {
+      "role": "assistant",
+      "text": "Parked. Before that - the tenants that already have holes from the old behaviour: should append_event try to repair or backfill those when it notices them?"
+    },
+    {
+      "role": "user",
+      "text": "No, append_event stays a pure guard - repair is a one-off backfill job the data team is writing against the archived stream, don't couple them. While you're in there though: whatever you do has to keep working with the archiver. That's the thing nobody remembers until it breaks."
+    },
+    {
+      "role": "assistant",
+      "text": "That's actually my worry with strict last + 1: the archiver's compaction markers jump the sequence forward when a batch is archived. Should I add a config knob - a maximum allowed gap, tolerance configurable per tenant?"
+    },
+    {
+      "role": "user",
+      "text": "No knob - a tolerance setting turns back into 'gaps allowed' within a quarter, someone will crank it. The rule is fixed: an event with type 'compaction' must advance the seq by exactly 100, because 100 is the archiver's documented batch size and it never emits partial batches. Exactly 100 - a compaction that jumps 50, or one that only advances by 1, is just as invalid as a gap and gets the same SequenceGapError. Ordinary events never get to jump, period."
+    },
+    {
+      "role": "assistant",
+      "text": "Understood: +1 for everything, except type == 'compaction' which must be +100 exactly. Different topic - when we reject a write, what should the log line carry? The full event payload for debugging?"
+    },
+    {
+      "role": "user",
+      "text": "Tenant, seq, and the reason only - payloads can carry PII and the audit pipeline feeds the SIEM, we are not spraying payloads into it. Oh, and fair warning: test_ledger has been flaky on CI this week - the wall-clock timestamp assertion - if that one goes red it's not you."
+    },
+    {
+      "role": "assistant",
+      "text": "Noted. Now the parked duplicate question. My default would be: any event whose seq we've already stored is a replay - return early as an idempotent no-op and never touch the stored record."
+    },
+    {
+      "role": "user",
+      "text": "That blanket no-op is exactly what we can't do - it's the other half of the compliance finding. If the incoming duplicate's payload_hash matches the stored event, fine, that's a redelivery: no-op, don't append, don't rewrite. But if the hash differs, something is trying to record a different version of history under an already-used seq, and that must raise SequenceConflictError. Never overwrite the stored event, and never silently swallow the mismatch either - swallowing is how the primary/replica divergence went undetected for a month."
+    },
+    {
+      "role": "assistant",
+      "text": "Makes sense. So the return contract is: True when the event was appended, False for the matching-hash redelivery no-op, and exceptions for gaps and conflicts?"
+    },
+    {
+      "role": "user",
+      "text": "Exactly. And to close the loop on 'consecutive': a brand-new tenant starts at seq 1 - treat an empty trail as last seq 0, so a first event arriving with seq 3 is a gap like any other."
+    },
+    {
+      "role": "assistant",
+      "text": "Got it. On rollout - this will start rejecting writes that used to succeed. Straight to every region, or staged?"
+    },
+    {
+      "role": "user",
+      "text": "Canary region first, with the gap and conflict rejections graphed - if a producer is genuinely broken I want to see it as a rejection spike in canary, not as a compliance finding next quarter. Everywhere else after two clean days."
+    },
+    {
+      "role": "assistant",
+      "text": "Recap of append_event's contract: per-tenant seq strictly consecutive - exactly last + 1, an empty trail counts as 0 so the first event is seq 1 - and anything else raises SequenceGapError; the single exception is a type == 'compaction' event, which must advance seq by exactly 100, the archiver's batch size, any other jump rejected the same way; a duplicate seq is an idempotent no-op returning False only when its payload_hash matches the stored event, and a mismatched hash raises SequenceConflictError - the ledger never overwrites and never silently ignores a conflicting replay."
+    }
+  ],
+  "function": "append_event",
+  "policy": "per-tenant seq exactly last+1 (empty trail = 0, gaps raise SequenceGapError); compaction events must advance by EXACTLY +100 (archiver batch size), any other jump rejected; duplicate seq is a no-op (False) only on matching payload_hash, mismatch raises SequenceConflictError",
+  "non_guessable": "per-tenant seq exactly last+1 (empty trail = 0, gaps raise SequenceGapError); compaction events must advance by EXACTLY +100 (archiver batch size), any other jump rejected; duplicate seq is a no-op (False) only on matching payload_hash, mismatch raises SequenceConflictError",
+  "host": "boltons@979fa9b"
+}

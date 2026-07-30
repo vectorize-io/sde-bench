@@ -29,6 +29,9 @@ CATEGORY = {
     # hard tier batch D (see traps_hard_d.py)
     "statetrans": "invariant",      # lifecycle transition map + lowercase canonical state
     "deploywave": "ordering",       # dependency leveling + tier-within-wave + canary wave 0
+    # hard tier batch E (see traps_hard_e.py; buried-decision long conversations)
+    "tagmerge": "collection-merge",  # precedence union + first-casing dedupe + scoped tombstones
+    "seqledger": "invariant",       # consecutive seq + compaction stride 100 + hash-checked replays
 }
 
 CATEGORIES = sorted(set(CATEGORY.values()))

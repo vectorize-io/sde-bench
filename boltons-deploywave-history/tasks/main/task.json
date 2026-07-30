@@ -6,7 +6,7 @@
   "tier": "planted",
   "category": "ordering",
   "module": "shipctl/waves.py",
-  "policy": "",
+  "policy": "waves by dependency depth; within a wave tier asc then name; canary services always wave 0 (deps assumed already live)",
   "bug_report": "The rollout order for yesterday's release looked random - a dependent service went out before the thing it reads from, and the checkout blip during release is back. A failing repro is at tests/test_regression.py. Fix plan_waves so a service never rolls out ahead of what it depends on, without breaking existing behaviour.",
   "cause_subject": "perf: simplify waves",
   "fail_to_pass": [

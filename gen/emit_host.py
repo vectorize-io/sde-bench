@@ -75,5 +75,5 @@ def emit(trap_name):
 if __name__ == "__main__":   # guard: importing this module must NOT (re)emit/overwrite curated tasks
     for n in ("rounding", "listmerge", "budget", "discount", "parseflag",
               "dedupe", "trimstats", "sched", "redact", "retryjitter", "csvquote",
-              "slalog", "unitparse", "statetrans", "deploywave"):
+              "slalog", "unitparse", "statetrans", "deploywave", "tagmerge", "seqledger"):
         print("emitted host task:", emit(n))

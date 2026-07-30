@@ -6,7 +6,7 @@
   "tier": "planted",
   "category": "mapping",
   "module": "infraconf/units.py",
-  "policy": "",
+  "policy": "memory suffixes binary (bare = MiB); disk suffixes decimal (bare = GB); K rejected for disk",
   "bug_report": "Since we migrated configs to the new parser, pods are being OOM-killed right after deploy - containers come up with less memory than their config asks for - and disk quotas also look slightly off on some volumes. A failing repro is at tests/test_regression.py. Fix parse_quantity so provisioned resources match the configs, without breaking existing behaviour.",
   "cause_subject": "perf: simplify units",
   "fail_to_pass": [

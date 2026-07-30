@@ -6,7 +6,7 @@
   "tier": "planted",
   "category": "filter-rule",
   "module": "slalog/uptime.py",
-  "policy": "",
+  "policy": "merge overlapping incident windows; ignore merged blips <60s; exclude maintenance ONLY when announced >=24h before start",
   "bug_report": "A tenant is disputing their monthly SLA report: our report says 99.7% uptime for the period, but their ops team swears the service met 99.9% and their own monitoring agrees. downtime_minutes is producing a bigger number than the outage time the tenant actually experienced. A failing repro is at tests/test_regression.py. Fix downtime_minutes so the report matches real downtime, without breaking existing behaviour.",
   "cause_subject": "perf: simplify uptime",
   "fail_to_pass": [

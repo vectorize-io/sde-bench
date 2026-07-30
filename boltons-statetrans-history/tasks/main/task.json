@@ -6,7 +6,7 @@
   "tier": "planted",
   "category": "invariant",
   "module": "orderflow/transitions.py",
-  "policy": "",
+  "policy": "pinned transition map; cancelled ONLY from {pending,on_hold}; refunded ONLY from returned; case-insensitive input, lowercase canonical state",
   "bug_report": "Finance reconciliation found orders that were both charged and cancelled on the same day, and one order was refunded twice. Support separately reports orders that look stuck - they can't move them out of their current status at all. A failing repro is at tests/test_regression.py. Fix advance so orders stop landing in impossible statuses, without breaking existing behaviour.",
   "cause_subject": "perf: simplify transitions",
   "fail_to_pass": [

@@ -1,0 +1,91 @@
+{
+  "task_id": "boltons-tagmerge-001",
+  "codebase": "boltons-tagmerge",
+  "build": "build.py",
+  "source": "conversation",
+  "tier": "planted",
+  "category": "collection-merge",
+  "module": "labelsync/tags.py",
+  "bug_report": "After the source-of-truth migration, resources show tags ops explicitly removed, and some tags appear twice with different capitalization; there are also literal dash-prefixed junk tags in the UI. A failing repro is at tests/test_regression.py. Fix merge_tags so the merged list reflects what the sources actually assert, without breaking existing behaviour.",
+  "fail_to_pass": [
+    "tests/test_regression.py"
+  ],
+  "pass_to_pass": [
+    "tests/test_tagmerge.py"
+  ],
+  "hidden_to_pass": [
+    "tests/test_hidden.py"
+  ],
+  "regression_test_file": "regression_test.py",
+  "hidden_test_file": "hidden_test.py",
+  "conversations": [
+    {
+      "role": "user",
+      "text": "Since the source-of-truth migration went live the tag situation on resources is a mess: the UI shows tags ops explicitly removed weeks ago, some tags appear twice with different capitalization, and there are literal dash-prefixed junk tags like '-decommissioned' rendered as if they were real tags."
+    },
+    {
+      "role": "assistant",
+      "text": "merge_tags just concatenates every source's list and drops exact-string duplicates, so 'Env:Prod' and 'env:prod' both survive and anything unusual passes straight through. Easiest cleanup: lowercase every tag on the way in and de-duplicate on the lowercased value - output would be all-lowercase and the duplicates collapse."
+    },
+    {
+      "role": "user",
+      "text": "De-duplicating case-insensitively is right, but do not lowercase the output - the Terraform provider treats tag casing as significant downstream and half our saved searches match exact casing. Keep one occurrence with its original casing. And remember what the migration actually changed: merge_tags now gets an ordered list of sources, index 0 is the highest precedence - the CMDB - then the cloud provider, then the legacy inventory."
+    },
+    {
+      "role": "assistant",
+      "text": "Understood, no lowercasing of the output. Unrelated while I'm in this file - the merge worker currently logs nothing when it drops a duplicate. Do you want a log line per dropped tag so support can answer the 'where did my tag go' tickets?"
+    },
+    {
+      "role": "user",
+      "text": "Debug level only, one line per merge run with counts, not per tag - the worker handles 40k resources a run and we already blew the log quota once this quarter. Also a heads-up if you run the suite: test_tags has been flaky on CI lately, the order-dependence one - rerun before you blame your change."
+    },
+    {
+      "role": "assistant",
+      "text": "Noted on both. Back to the merge: when the same tag appears in several sources with different casing, which casing survives - and what order should the merged list come out in?"
+    },
+    {
+      "role": "user",
+      "text": "The casing from the highest-precedence source that asserts the tag: if the CMDB says 'Env:Prod' and the provider says 'env:prod', the output says 'Env:Prod'. Order is first occurrence, walking the sources in precedence order and keeping each source's own order - the reconciler diffs the output, so it has to be deterministic."
+    },
+    {
+      "role": "assistant",
+      "text": "That leaves the dash entries. They look like corruption from the importer - should I just filter out anything starting with '-' and file a ticket against the importer?"
+    },
+    {
+      "role": "user",
+      "text": "They're not corruption, they're deliberate: the ops sync writes '-name' as a tombstone meaning 'remove this tag' - that's how ops deletes tags now. So they must never show up in the output as literal tags, but they carry meaning you have to apply, not just strip."
+    },
+    {
+      "role": "assistant",
+      "text": "Then I'll build a kill list: collect every '-name' across all sources and strip that tag from the entire merged result, wherever it came from."
+    },
+    {
+      "role": "user",
+      "text": "No - that's exactly the wrong scope, and it's why we didn't do this in the collector. A tombstone speaks only for the sources BELOW it: '-standby' from the CMDB suppresses 'standby' coming from the provider or the legacy inventory, but a '-critical' from the legacy inventory must never delete a 'critical' the CMDB itself asserts. If a higher-precedence source asserted the tag, it stays. A global kill list lets the junkiest source delete the source of truth's tags."
+    },
+    {
+      "role": "assistant",
+      "text": "Got it - tombstones scope downward only, never upward. What about a tombstone that matches nothing below it: hard error, warning, or ignore?"
+    },
+    {
+      "role": "user",
+      "text": "Silently fine. Ops writes tombstones speculatively for tags that may not exist everywhere yet - erroring would wedge the whole sync. And tombstone matching is case-insensitive, same as the dedupe: '-Legacy' kills 'legacy'."
+    },
+    {
+      "role": "assistant",
+      "text": "One more thing before I write this up - rollout. Do you want the new merge behind a feature flag, or shipped straight to the merge worker?"
+    },
+    {
+      "role": "user",
+      "text": "No flag - flags rot in that worker. Stage it to the internal org's sync first, watch one full cycle, then everywhere, same as we did for the pagination fix."
+    },
+    {
+      "role": "assistant",
+      "text": "Final shape of merge_tags then: sources arrive highest precedence first; union in precedence order, de-duplicated case-insensitively, keeping the casing of the first - highest-precedence - occurrence, output in first-occurrence order. A '-name' tombstone suppresses that tag, matched case-insensitively, from all lower-precedence sources only - it never removes a tag a higher-precedence source asserted. Tombstones never appear in the output, and an unmatched tombstone is silently ignored."
+    }
+  ],
+  "function": "merge_tags",
+  "policy": "precedence-ordered case-insensitive union keeping the first (highest-precedence) casing, first-occurrence order; '-name' tombstones suppress the tag in lower-precedence sources only, never a higher-precedence assert; tombstones never in output, unmatched ones silently ignored",
+  "non_guessable": "precedence-ordered case-insensitive union keeping the first (highest-precedence) casing, first-occurrence order; '-name' tombstones suppress the tag in lower-precedence sources only, never a higher-precedence assert; tombstones never in output, unmatched ones silently ignored",
+  "host": "boltons@979fa9b"
+}
