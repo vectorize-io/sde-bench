@@ -35,6 +35,9 @@ CATEGORY = {
     # hard tier batch F (see traps_hard_f.py; buried-decision long conversations)
     "overage": "numeric-policy",    # ceil-prorated quota + 25-unit grace + 50-unit blocks
     "drainplan": "ordering",        # in-flight shortest-first + idempotent-in-window + deadline drops
+    # hard tier batch G (see traps_hard_g.py; buried-decision long conversations)
+    "hostallow": "set-membership",  # lowercase-normalized exact set + single-label wildcards + exact-only IPs
+    "mimemap": "mapping",           # pinned case-insensitive extension table + dotfile carve-out
 }
 
 CATEGORIES = sorted(set(CATEGORY.values()))

@@ -1,0 +1,91 @@
+{
+  "task_id": "boltons-mimemap-001",
+  "codebase": "boltons-mimemap",
+  "build": "build.py",
+  "source": "conversation",
+  "tier": "planted",
+  "category": "mapping",
+  "module": "assetserve/mime.py",
+  "bug_report": "The analytics team's CSV exports open garbled in Excel for some users but not others, an embedded image on the docs site intermittently renders as raw text, and a build-pipeline config artifact was displayed inline by the browser instead of downloading. A failing repro is at tests/test_regression.py. Fix content_type so served assets get the intended types, without breaking existing behaviour.",
+  "fail_to_pass": [
+    "tests/test_regression.py"
+  ],
+  "pass_to_pass": [
+    "tests/test_mimemap.py"
+  ],
+  "hidden_to_pass": [
+    "tests/test_hidden.py"
+  ],
+  "regression_test_file": "regression_test.py",
+  "hidden_test_file": "hidden_test.py",
+  "conversations": [
+    {
+      "role": "user",
+      "text": "Three tickets that look unrelated but all smell like assetserve: the analytics team's CSV exports open garbled in Excel - but only for some users; the docs site has an embedded image that intermittently renders as raw text; and last week a config artifact from the build pipeline was reachable and the browser displayed it inline instead of downloading it. Can you look at content_type?"
+    },
+    {
+      "role": "assistant",
+      "text": "content_type is doing registry-style guessing - the table looks lifted from old platform defaults: .csv comes back application/vnd.ms-excel, .js is application/javascript, .svg is bare image/svg+xml, and anything unknown falls back to text/plain. Cleanest fix in my view: drop the homegrown table and call Python's mimetypes.guess_type - it's maintained upstream and covers far more types."
+    },
+    {
+      "role": "user",
+      "text": "Absolutely not - mimetypes reads the OS registry, which is exactly why the symptom is 'some users': the answer differs per machine and per platform. That's the bug class, not the fix. We pin our own table in code, deterministic everywhere. And the first pin: .csv is text/csv, full stop - application/vnd.ms-excel is a Windows-registry fossil, and it's what mangles the Excel import path for the analytics exports."
+    },
+    {
+      "role": "assistant",
+      "text": "Pinned in-code table, csv -> text/csv. While I'm here: unknown extensions get no telemetry today - want a counter or a log line whenever we serve a type we don't recognize?"
+    },
+    {
+      "role": "user",
+      "text": "A counter, not a log line - the asset host serves millions of files a day and per-request logging for unknowns would drown the collector; a metric tagged by extension is enough to spot table gaps. Also heads-up: the cache-header test in the assetserve suite has been flaky on CI since Monday - infra timeout, not correctness - rerun before you dig."
+    },
+    {
+      "role": "assistant",
+      "text": "Will do. For the table lookup itself - keep it case-sensitive? Exact-match lookups are cheaper and our build outputs lowercase names anyway."
+    },
+    {
+      "role": "user",
+      "text": "No - case-INSENSITIVE, always. Camera uploads arrive as .JPG, the analytics exporter emits .CSV, and the old Windows share is full of .Html. Lowercase the extension before the lookup; the table keys stay lowercase."
+    },
+    {
+      "role": "assistant",
+      "text": "Lowercase-normalized lookup then. For svg I'll pin image/svg+xml, the standard type."
+    },
+    {
+      "role": "user",
+      "text": "Not quite - pin exactly 'image/svg+xml; charset=utf-8', charset suffix included. That one is non-negotiable: it came out of the XSS pentest finding - svg is markup, and serving it without an explicit charset was part of the reported attack surface. The intermittently-text image ticket is that same file typed differently by machines with different registries, by the way. And while you're pinning script types: .js is text/javascript per the WHATWG registry, not application/javascript."
+    },
+    {
+      "role": "assistant",
+      "text": "svg with the charset suffix exactly, js as text/javascript. For YAML I'll map .yaml -> application/x-yaml; .yml barely appears in the asset buckets - skip it?"
+    },
+    {
+      "role": "user",
+      "text": "Map BOTH - .yml and .yaml, same application/x-yaml. Half the config templates use the short form; a table that only knows one spelling is how we get another 'works on my pipeline' ticket. And the fallback for anything not in the table is application/octet-stream, never text/plain - the text/plain fallback is why the browser displayed that leaked build artifact inline instead of forcing a download."
+    },
+    {
+      "role": "assistant",
+      "text": "Octet-stream fallback, both yaml spellings. Dotfiles are the remaining mess: .env technically has extension 'env', so it falls through to the fallback - but if I special-case every leading-dot name as extensionless, .config.yaml would wrongly become octet-stream too."
+    },
+    {
+      "role": "user",
+      "text": "Split it exactly there: a dotfile with NO other dot - .env, .gitignore - has no extension at all, so octet-stream. A dot-leading name WITH a real extension - .config.yaml - maps by that extension like any other file. Same no-extension bucket for a name with no dot at all and for a bare trailing dot like 'archive.'. The leaked artifact was a dotfile, so this split is the piece that actually closes that ticket."
+    },
+    {
+      "role": "assistant",
+      "text": "Clear split. Rollout question before I write tests - content-type changes are cache-visible; do we need to purge the CDN or version the asset URLs when this ships?"
+    },
+    {
+      "role": "user",
+      "text": "No purge - the CDN keys on the URL and the types converge as entries expire; ship it on the weekly release train like any assetserve change. Just remember the response also sends X-Content-Type-Options: nosniff - that's handled at the middleware layer, so your function only owes the exact type strings."
+    },
+    {
+      "role": "assistant",
+      "text": "Recap of content_type(filename): a pinned in-code table, never the platform registry. The lookup is case-insensitive - lowercase the extension first. Pinned overrides: .csv -> text/csv (never application/vnd.ms-excel), .yml AND .yaml -> application/x-yaml, .svg -> exactly 'image/svg+xml; charset=utf-8' (the pentest-mandated charset suffix), .js -> text/javascript. Anything not in the table -> application/octet-stream, never text/plain. A name with no extension, a bare trailing dot, or a plain dotfile like .env -> octet-stream; a dot-leading name with a real extension like .config.yaml maps by its real extension."
+    }
+  ],
+  "function": "content_type",
+  "policy": "extension mapping is a pinned in-code table (never the platform mimetypes registry) with case-insensitive lookup: .csv -> text/csv (never application/vnd.ms-excel), .yml AND .yaml -> application/x-yaml, .svg -> 'image/svg+xml; charset=utf-8' (the charset suffix is required - XSS pentest finding), .js -> text/javascript; unknown extensions -> application/octet-stream (never text/plain); no-extension names, bare-trailing-dot names and plain dotfiles (.env) -> octet-stream, but a dot-leading name with a real extension (.config.yaml) maps by that extension",
+  "non_guessable": "extension mapping is a pinned in-code table (never the platform mimetypes registry) with case-insensitive lookup: .csv -> text/csv (never application/vnd.ms-excel), .yml AND .yaml -> application/x-yaml, .svg -> 'image/svg+xml; charset=utf-8' (the charset suffix is required - XSS pentest finding), .js -> text/javascript; unknown extensions -> application/octet-stream (never text/plain); no-extension names, bare-trailing-dot names and plain dotfiles (.env) -> octet-stream, but a dot-leading name with a real extension (.config.yaml) maps by that extension",
+  "host": "boltons@979fa9b"
+}

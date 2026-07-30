@@ -1,0 +1,91 @@
+{
+  "task_id": "boltons-hostallow-001",
+  "codebase": "boltons-hostallow",
+  "build": "build.py",
+  "source": "conversation",
+  "tier": "planted",
+  "category": "set-membership",
+  "module": "egressgate/allowlist.py",
+  "bug_report": "The quarterly security review found egress going to hosts nobody remembers approving, and the media service broke after its upstream hostname was 'corrected' from a value that had been working; on top of that, the same reporting host is reachable from one service and denied from its twin. A failing repro is at tests/test_regression.py. Fix is_allowed so egress decisions follow the allowlist policy, without breaking existing behaviour.",
+  "fail_to_pass": [
+    "tests/test_regression.py"
+  ],
+  "pass_to_pass": [
+    "tests/test_hostallow.py"
+  ],
+  "hidden_to_pass": [
+    "tests/test_hidden.py"
+  ],
+  "regression_test_file": "regression_test.py",
+  "hidden_test_file": "hidden_test.py",
+  "conversations": [
+    {
+      "role": "user",
+      "text": "The quarterly security review flagged outbound connections to hosts nobody remembers approving - the egress dashboard shows traffic to domains that aren't in anyone's allowlist spreadsheet. Separately, the media service broke on Friday after someone 'corrected' its upstream hostname from a value that had been working for months, and the same reporting host is reachable from one service but denied from its twin. All three point at is_allowed in egressgate - can you take a look?"
+    },
+    {
+      "role": "assistant",
+      "text": "Looking at it: is_allowed does raw string work - an exact entry matches when the host equals it OR merely ends with it, and a wildcard *.example.com matches any host ending in example.com, all case-sensitive. That explains approvals nobody made: evilexample.com literally ends with example.com. My plan: lowercase both sides, keep IP hosts matching only exact IP entries, and make wildcards proper suffix matches - *.example.com matches any subdomain at any depth."
+    },
+    {
+      "role": "user",
+      "text": "Lowercasing is right - DNS names are case-insensitive, and the twin-service discrepancy is exactly that: one service upper-cases hostnames from its config and the other doesn't, so normalize the host AND the entries to lowercase. But any-depth wildcards are off the table. After the subdomain-takeover incident last year, security decided a wildcard covers EXACTLY ONE additional label: *.example.com matches a.example.com and nothing deeper - a.b.example.com does not match, because whoever controls a b-level name must not inherit approval. A team that needs a deeper name adds it explicitly."
+    },
+    {
+      "role": "assistant",
+      "text": "Single extra label only, understood. While I'm in egressgate - denied connections currently vanish silently. Want a log line per denial so the next review has a trail?"
+    },
+    {
+      "role": "user",
+      "text": "A sampled one - log a given (service, host) denial at most once a minute, warn level; full-rate denial logging melted the collector during the last incident drill. Unrelated heads-up: if you run the egressgate suite, the proxy-handshake test has been flaky on CI all week - infra says timeouts, not correctness - so rerun before you blame your change."
+    },
+    {
+      "role": "assistant",
+      "text": "Noted on both. Question on the wildcard edge: should the bare domain match its own wildcard? Some proxies treat *.example.com as covering example.com itself, and it would save teams a config line."
+    },
+    {
+      "role": "user",
+      "text": "No. The apex is a different trust decision - *.example.com does NOT match bare example.com; if a team wants the apex they list example.com as its own exact entry. And the mirror rule holds too: an exact example.com entry does not cover subdomains. One entry, one scope."
+    },
+    {
+      "role": "assistant",
+      "text": "Strict separation between apex and wildcard. What about IP literals? A host like 10.40.2.17 could in principle match a wildcard entry if the suffix lines up - want me to allow that for the internal ranges?"
+    },
+    {
+      "role": "user",
+      "text": "Never. A dotted-quad host matches ONLY an exact IP entry. Wildcards are a DNS concept; *.40.2.17 matching 10.40.2.17 is a config typo becoming an approval. If the host parses as an IPv4 literal, it's exact match or nothing - no wildcard ever applies."
+    },
+    {
+      "role": "assistant",
+      "text": "IPs exact-only. Different topic - rollout. Tightening this will start denying hosts that only matched through the endswith bug; straight to prod or staged?"
+    },
+    {
+      "role": "user",
+      "text": "Staged - shadow mode first: log what WOULD be denied for a day, security triages the list, then enforce. That's also how we catch teams relying on lookalike matches. Oh, and Friday's media-service breakage is a real policy gap, not just a config mistake: the 'corrected' value was the canonical rooted form - host.example.com. with a trailing dot - and the matcher treated it as a different string, so a perfectly valid FQDN got denied."
+    },
+    {
+      "role": "assistant",
+      "text": "So the fix owes them trailing-dot handling. Should I strip any number of trailing dots, or treat the rooted form specially somehow?"
+    },
+    {
+      "role": "user",
+      "text": "Strip the single trailing dot before matching - host.example.com. names exactly the same host as host.example.com, that's just DNS root notation. Normalize it away on the host, and it doesn't hurt to do the same to entries since people paste rooted names into configs. Everything downstream - exact, wildcard, IP - runs on the normalized name."
+    },
+    {
+      "role": "assistant",
+      "text": "Normalization first, then the match rules. Last boundary check so the tests pin the right edges: 'exactly one label' means the extra label is non-empty and contains no dot - so ..example.com junk never matches - and case-insensitivity applies to wildcard entries too, right?"
+    },
+    {
+      "role": "user",
+      "text": "Right on both - an empty label isn't a label, and *.EXAMPLE.com in a config must behave identically to *.example.com. The entries come from a dozen hand-edited YAML files; assume any casing on either side."
+    },
+    {
+      "role": "assistant",
+      "text": "Recap of is_allowed(host, allowlist): normalize first - lowercase the host and every entry, strip a single trailing dot (a rooted FQDN names the same host). Exact entries match the normalized host exactly - never by suffix, and an exact entry does not cover subdomains. A wildcard *.example.com matches EXACTLY ONE additional left label - a.example.com yes, a.b.example.com no, bare example.com no, per the post-subdomain-takeover single-level rule - with the extra label non-empty and dot-free. IPv4 dotted-quad hosts match only exact IP entries; wildcards never apply to IP literals."
+    }
+  ],
+  "function": "is_allowed",
+  "policy": "exact hostname entries match case-insensitively (host and entries both normalized to lowercase, and an exact entry never matches by suffix or covers subdomains); a wildcard entry *.example.com matches EXACTLY ONE additional left label (a.example.com yes, a.b.example.com no, bare example.com no - single-level rule from the subdomain-takeover incident); IPv4 dotted-quad hosts match ONLY exact IP entries - wildcards never apply to IP literals - and a trailing-dot rooted FQDN (host.example.com.) is normalized (trailing dot stripped) before matching",
+  "non_guessable": "exact hostname entries match case-insensitively (host and entries both normalized to lowercase, and an exact entry never matches by suffix or covers subdomains); a wildcard entry *.example.com matches EXACTLY ONE additional left label (a.example.com yes, a.b.example.com no, bare example.com no - single-level rule from the subdomain-takeover incident); IPv4 dotted-quad hosts match ONLY exact IP entries - wildcards never apply to IP literals - and a trailing-dot rooted FQDN (host.example.com.) is normalized (trailing dot stripped) before matching",
+  "host": "boltons@979fa9b"
+}

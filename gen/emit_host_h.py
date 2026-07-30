@@ -42,7 +42,7 @@ H_MSG = {
 }
 for _n in ("dedupe", "trimstats", "sched", "redact", "retryjitter", "csvquote",
            "slalog", "unitparse", "statetrans", "deploywave", "tagmerge", "seqledger",
-           "overage", "drainplan"):
+           "overage", "drainplan", "hostallow", "mimemap"):
     H_MSG[_n] = (TRAPS[_n]["decision_subject"], TRAPS[_n]["decision_rationale"])
 TASKS = list(H_MSG)
 

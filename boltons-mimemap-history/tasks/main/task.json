@@ -1,0 +1,26 @@
+{
+  "task_id": "boltons-mimemap-history-001",
+  "codebase": "boltons-mimemap-history",
+  "build": "build.py",
+  "source": "history",
+  "tier": "planted",
+  "category": "mapping",
+  "module": "assetserve/mime.py",
+  "policy": "extension mapping is a pinned in-code table (never the platform mimetypes registry) with case-insensitive lookup: .csv -> text/csv (never application/vnd.ms-excel), .yml AND .yaml -> application/x-yaml, .svg -> 'image/svg+xml; charset=utf-8' (the charset suffix is required - XSS pentest finding), .js -> text/javascript; unknown extensions -> application/octet-stream (never text/plain); no-extension names, bare-trailing-dot names and plain dotfiles (.env) -> octet-stream, but a dot-leading name with a real extension (.config.yaml) maps by that extension",
+  "bug_report": "The analytics team's CSV exports open garbled in Excel for some users but not others, an embedded image on the docs site intermittently renders as raw text, and a build-pipeline config artifact was displayed inline by the browser instead of downloading. A failing repro is at tests/test_regression.py. Fix content_type so served assets get the intended types, without breaking existing behaviour.",
+  "cause_subject": "perf: simplify mime",
+  "fail_to_pass": [
+    "tests/test_regression.py"
+  ],
+  "pass_to_pass": [
+    "tests/test_mimemap.py"
+  ],
+  "hidden_to_pass": [
+    "tests/test_hidden.py"
+  ],
+  "regression_test_file": "regression_test.py",
+  "hidden_test_file": "hidden_test.py",
+  "non_guessable": "decision lives in git history (a documented commit), broken by a misleading 'perf' regression commit; git log/blame is the shortcut",
+  "function": "content_type",
+  "host": "boltons@979fa9b"
+}
