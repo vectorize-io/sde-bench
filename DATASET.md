@@ -65,7 +65,7 @@ used as a fixture (cloned, not vendored). Its **~1500 real commit subjects + rat
 the memory store as retrieval noise, plus decoy chats — so surfacing the right decision is a real
 ranking problem, not a lookup.
 
-## Tasks (55)
+## Tasks (57)
 
 | task | source | tier | category | module/fn | non-guessable policy |
 |---|---|---|---|---|---|
@@ -98,6 +98,8 @@ ranking problem, not a lookup.
 | retryjitter-amended | conversation-amended | planted | set-membership | `httpretry/policy.py` | the amended rule (adds 408, cap 60->30s); chat A's rule passes repro, fails hidden |
 | slalog-amended | conversation-amended | planted | filter-rule | `slalog/uptime.py` | the amended maintenance rule (subtract-all -> 24h-notice only); chat A's rule is a proven naive |
 | unitparse-amended | conversation-amended | planted | mapping | `infraconf/units.py` | the amended disk semantics (uniform-binary -> decimal disk, bare GB, K invalid); chat A's rule is a proven naive |
+| tagmerge-amended | conversation-amended | planted | collection-merge | `labelsync/tags.py` | the AMENDED tombstone scope (global -> downward-only); chat A's global kill list is a proven naive |
+| overage-amended | conversation-amended | planted | numeric-policy | `meterbill/overage.py` | the AMENDED grace rule (no-grace -> 25-unit grace before blocking); chat A's no-grace rule is a proven naive |
 | budget-history | history | planted | numeric-policy | `retryx/retry.py` | exactly 7 (measured to the rate-limit window) |
 | csvquote-history | history | planted | invariant | `erpexport/writer.py` | leading-zero digit strings written as `="…"` text form; minimal quoting; CRLF |
 | dedupe-history | history | planted | collection-merge | `crmsync/dedupe.py` | dup key=(email.lower, same calendar day); most-filled wins; tie -> primary |

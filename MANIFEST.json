@@ -1,22 +1,22 @@
 {
   "dataset": "sde-bench",
   "host": "boltons (github.com/mahmoud/boltons) @ 979fa9b",
-  "n_tasks": 55,
+  "n_tasks": 57,
   "by_source": {
     "conversation": 25,
-    "conversation-amended": 4,
+    "conversation-amended": 6,
     "history": 26
   },
   "by_tier": {
-    "planted": 46,
+    "planted": 48,
     "real-function": 9
   },
   "by_category": {
-    "collection-merge": 7,
+    "collection-merge": 8,
     "filter-rule": 7,
     "invariant": 7,
     "mapping": 9,
-    "numeric-policy": 8,
+    "numeric-policy": 9,
     "ordering": 8,
     "set-membership": 9
   },
@@ -205,6 +205,14 @@
       "category": "invariant",
       "function": "OrderedMultiDict.__setitem__",
       "policy": "__setitem__ must reset the underlying value list to [v] after _remove_all (not reuse add(), which appends to the stale list)"
+    },
+    {
+      "task_id": "boltons-overage-amended-001",
+      "source": "conversation-amended",
+      "tier": "planted",
+      "category": "numeric-policy",
+      "function": "overage_charge",
+      "policy": "quota prorated by day (ceil); 25-unit grace allowance applied before 50-unit block rounding (post-amendment)"
     },
     {
       "task_id": "boltons-overage-history-001",
@@ -397,6 +405,14 @@
       "category": "invariant",
       "function": "advance",
       "policy": "pinned transition map; cancelled ONLY from {pending,on_hold}; refunded ONLY from returned; case-insensitive input, lowercase canonical state"
+    },
+    {
+      "task_id": "boltons-tagmerge-amended-001",
+      "source": "conversation-amended",
+      "tier": "planted",
+      "category": "collection-merge",
+      "function": "merge_tags",
+      "policy": "precedence-ordered case-insensitive union, first-casing wins; tombstones suppress LOWER-precedence sources only (post-amendment)"
     },
     {
       "task_id": "boltons-tagmerge-history-001",
