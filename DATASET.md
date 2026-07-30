@@ -65,7 +65,7 @@ used as a fixture (cloned, not vendored). Its **~1500 real commit subjects + rat
 the memory store as retrieval noise, plus decoy chats — so surfacing the right decision is a real
 ranking problem, not a lookup.
 
-## Tasks (51)
+## Tasks (55)
 
 | task | source | tier | category | module/fn | non-guessable policy |
 |---|---|---|---|---|---|
@@ -92,6 +92,8 @@ ranking problem, not a lookup.
 | seqledger | conversation | planted | invariant | `auditlog/ledger.py` | per-tenant seq exactly last+1; compaction advances EXACTLY +100; duplicate no-op only on matching payload_hash, else conflict error |
 | overage | conversation | planted | numeric-policy | `meterbill/overage.py` | quota prorated by day (ceil); 25-unit monthly grace BEFORE blocking; bills in 50-unit blocks rounded UP |
 | drainplan | conversation | planted | ordering | `workerctl/drain.py` | running finish first (remaining asc); idempotent-in-window queued jobs run now; expired queued jobs dropped; rest requeue in original order |
+| hostallow | conversation | planted | set-membership | `egressgate/allowlist.py` | exact entries case-insensitive; `*.d` wildcard matches EXACTLY one label (never bare/deeper); IPs exact-only; trailing dot stripped |
+| mimemap | conversation | planted | mapping | `assetserve/mime.py` | pinned table: csv->text/csv, yml+yaml->x-yaml, svg needs charset=utf-8, js->text/javascript; unknown/dotfiles->octet-stream, .config.yaml by real ext |
 | dedupe-amended | conversation-amended | planted | collection-merge | `crmsync/dedupe.py` | the amended conflict rule (chat A's keep-latest is a proven naive) |
 | retryjitter-amended | conversation-amended | planted | set-membership | `httpretry/policy.py` | the amended rule (adds 408, cap 60->30s); chat A's rule passes repro, fails hidden |
 | slalog-amended | conversation-amended | planted | filter-rule | `slalog/uptime.py` | the amended maintenance rule (subtract-all -> 24h-notice only); chat A's rule is a proven naive |
@@ -119,6 +121,8 @@ ranking problem, not a lookup.
 | tagmerge-history | history | planted | collection-merge | `labelsync/tags.py` | precedence-ordered case-insensitive union, first casing wins; tombstones suppress lower-precedence only |
 | overage-history | history | planted | numeric-policy | `meterbill/overage.py` | quota prorated by day (ceil); 25-unit grace before 50-unit blocking |
 | drainplan-history | history | planted | ordering | `workerctl/drain.py` | running finish first; idempotent-in-window run now; expired dropped; rest original order |
+| hostallow-history | history | planted | set-membership | `egressgate/allowlist.py` | single-label wildcards; IPs exact-only; trailing dot stripped |
+| mimemap-history | history | planted | mapping | `assetserve/mime.py` | pinned MIME table incl. svg charset suffix; dotfile carve-out |
 | seqledger-history | history | planted | invariant | `auditlog/ledger.py` | per-tenant seq exactly last+1; compaction advances EXACTLY +100; duplicate no-op only on matching payload_hash |
 
 Per-task metadata is in each `task.json` (`source`, `tier`, `category`, `module`, `function`,

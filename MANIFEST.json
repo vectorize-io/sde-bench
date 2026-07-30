@@ -1,24 +1,24 @@
 {
   "dataset": "sde-bench",
   "host": "boltons (github.com/mahmoud/boltons) @ 979fa9b",
-  "n_tasks": 51,
+  "n_tasks": 55,
   "by_source": {
-    "conversation": 23,
+    "conversation": 25,
     "conversation-amended": 4,
-    "history": 24
+    "history": 26
   },
   "by_tier": {
-    "planted": 42,
+    "planted": 46,
     "real-function": 9
   },
   "by_category": {
     "collection-merge": 7,
     "filter-rule": 7,
     "invariant": 7,
-    "mapping": 7,
+    "mapping": 9,
     "numeric-policy": 8,
     "ordering": 8,
-    "set-membership": 7
+    "set-membership": 9
   },
   "categories": [
     "collection-merge",
@@ -151,6 +151,22 @@
       "policy": "drop all-numeric tags EXCEPT 4-digit years (1900-2099)"
     },
     {
+      "task_id": "boltons-hostallow-history-001",
+      "source": "history",
+      "tier": "planted",
+      "category": "set-membership",
+      "function": "is_allowed",
+      "policy": "exact hostname entries match case-insensitively (host and entries both normalized to lowercase, and an exact entry never matches by suffix or covers subdomains); a wildcard entry *.example.com matches EXACTLY ONE additional left label (a.example.com yes, a.b.example.com no, bare example.com no - single-level rule from the subdomain-takeover incident); IPv4 dotted-quad hosts match ONLY exact IP entries - wildcards never apply to IP literals - and a trailing-dot rooted FQDN (host.example.com.) is normalized (trailing dot stripped) before matching"
+    },
+    {
+      "task_id": "boltons-hostallow-001",
+      "source": "conversation",
+      "tier": "planted",
+      "category": "set-membership",
+      "function": "is_allowed",
+      "policy": "exact hostname entries match case-insensitively (host and entries both normalized to lowercase, and an exact entry never matches by suffix or covers subdomains); a wildcard entry *.example.com matches EXACTLY ONE additional left label (a.example.com yes, a.b.example.com no, bare example.com no - single-level rule from the subdomain-takeover incident); IPv4 dotted-quad hosts match ONLY exact IP entries - wildcards never apply to IP literals - and a trailing-dot rooted FQDN (host.example.com.) is normalized (trailing dot stripped) before matching"
+    },
+    {
       "task_id": "boltons-listmerge-history-001",
       "source": "history",
       "tier": "planted",
@@ -165,6 +181,22 @@
       "category": "collection-merge",
       "function": "apply_updates",
       "policy": "union list values (de-duplicated, base order first)"
+    },
+    {
+      "task_id": "boltons-mimemap-history-001",
+      "source": "history",
+      "tier": "planted",
+      "category": "mapping",
+      "function": "content_type",
+      "policy": "extension mapping is a pinned in-code table (never the platform mimetypes registry) with case-insensitive lookup: .csv -> text/csv (never application/vnd.ms-excel), .yml AND .yaml -> application/x-yaml, .svg -> 'image/svg+xml; charset=utf-8' (the charset suffix is required - XSS pentest finding), .js -> text/javascript; unknown extensions -> application/octet-stream (never text/plain); no-extension names, bare-trailing-dot names and plain dotfiles (.env) -> octet-stream, but a dot-leading name with a real extension (.config.yaml) maps by that extension"
+    },
+    {
+      "task_id": "boltons-mimemap-001",
+      "source": "conversation",
+      "tier": "planted",
+      "category": "mapping",
+      "function": "content_type",
+      "policy": "extension mapping is a pinned in-code table (never the platform mimetypes registry) with case-insensitive lookup: .csv -> text/csv (never application/vnd.ms-excel), .yml AND .yaml -> application/x-yaml, .svg -> 'image/svg+xml; charset=utf-8' (the charset suffix is required - XSS pentest finding), .js -> text/javascript; unknown extensions -> application/octet-stream (never text/plain); no-extension names, bare-trailing-dot names and plain dotfiles (.env) -> octet-stream, but a dot-leading name with a real extension (.config.yaml) maps by that extension"
     },
     {
       "task_id": "boltons-omdset-001",

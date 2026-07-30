@@ -6,7 +6,7 @@ repro but fails a held-out hidden test. Where that decision *lives* — a real c
 git history (**`history`**) or a past developer conversation (**`conversation`**) — is the independent variable, and what a
 memory system can *reach* is the point.
 
-This repo is the **dataset** (51 tasks hosted in the real [boltons](https://github.com/mahmoud/boltons)
+This repo is the **dataset** (55 tasks hosted in the real [boltons](https://github.com/mahmoud/boltons)
 library). The runner/harness and the memory systems under test live in
 [open-memory-benchmark](https://github.com/vectorize-io/open-memory-benchmark), which consumes this
 repo as a git submodule.
