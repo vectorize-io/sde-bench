@@ -21,35 +21,67 @@
   "conversations": [
     {
       "role": "user",
-      "text": "We rolled out the new config parser and pods started getting OOM-killed within minutes of deploy - containers come up with way less memory than their config asks for. Storage also says some volumes ended up a few percent smaller than expected."
+      "text": "We rolled out the new config parser and pods started getting OOM-killed within minutes of deploy - containers come up with noticeably less memory than their config asks for. Storage also filed a ticket: some provisioned volumes ended up a few percent smaller than the spec said."
     },
     {
       "role": "assistant",
-      "text": "parse_quantity is reading every suffix as decimal - '2G' of memory becomes 2*10**9 bytes, short of the 2 GiB the container needs. I'll switch all suffixes to binary, 1024-based, like Kubernetes' Gi."
+      "text": "parse_quantity treats every suffix as decimal, so '2G' of memory becomes 2*10**9 bytes - about 7% short of the 2 GiB the container actually needs, which lines up with the OOM kills. Simplest fix: switch all suffixes to binary, 1024-based across the board, the way Kubernetes reads Gi."
     },
     {
       "role": "user",
-      "text": "Binary for memory only. The cgroup limits the vendor API sets are 1024-based, so '1G' - or '1g', casing must not matter - of memory means exactly 1024**3 bytes. But disk stays decimal: storage is billed and partitioned in decimal units, '1G' of disk is exactly 1000**3."
+      "text": "No - binary across the board is as wrong as decimal across the board, just in the other direction. The mapping depends on the resource kind. Memory is binary: the cgroup limits the vendor API sets are 1024-based, so '1G' of memory is exactly 1024**3 bytes. Disk stays decimal: storage is billed and partitioned in decimal units, so '1G' of disk is exactly 1000**3. And casing must not matter for either kind - '1g' and '1G' are the same thing."
     },
     {
       "role": "assistant",
-      "text": "Understood, the mapping depends on the resource kind. And a bare number with no suffix - raw bytes for both kinds?"
+      "text": "Kind-dependent tables, got it. Side note while I'm in the file: the ValueError for an unknown suffix doesn't say which resource kind was being parsed, which made this outage annoying to trace. Mind if I put the kind and the offending suffix in the message?"
     },
     {
       "role": "user",
-      "text": "No. A bare memory value means MiB - that's what all the legacy templates meant, so 256 is 256*1024**2 bytes. A bare disk value means GB, 1000**3 per unit."
+      "text": "Do it - kind and suffix, but never echo the whole config blob into the exception, those messages end up in log aggregation. Speaking of which: test_units has been flaky on CI since Tuesday - the property-based fuzz case - if it goes red on your PR, rerun before digging."
     },
     {
       "role": "assistant",
-      "text": "Should the 'K' suffix work for both kinds - 1024 for memory, 1000 for disk?"
+      "text": "Will do. Next question: values with no suffix at all. The parser currently returns them as raw bytes - I'd keep that, it's at least unambiguous."
     },
     {
       "role": "user",
-      "text": "For memory yes, K or k is 1024. For disk reject it with a ValueError: the vendor's provisioning API has no kilobyte disk unit, and silently guessing a size would misprovision the volume."
+      "text": "Keep it and the fleet stays broken - raw bytes is the other half of the bug. A bare memory value means MiB: that's what every legacy template meant, so 256 is 256*1024**2 bytes. A bare disk value means GB - 1000**3 per unit. Nobody has ever provisioned a 512-byte volume on purpose."
     },
     {
       "role": "assistant",
-      "text": "Confirmed: memory suffixes are binary and case-insensitive with bare values in MiB; disk suffixes are decimal with bare values in GB; 'K' is valid for memory only and raises a ValueError for disk."
+      "text": "Understood - bare memory in MiB, bare disk in GB. Do we accept fractional quantities like '1.5G', or integers only?"
+    },
+    {
+      "role": "user",
+      "text": "Integers only, same as today - the vendor API takes integer byte counts and the templates were all written that way. Leading and trailing whitespace stays tolerated though, the YAML pipeline pads values sometimes."
+    },
+    {
+      "role": "assistant",
+      "text": "OK. Last mapping question: the 'K' suffix. I'd make it work for both kinds - 1024 for memory, 1000 for disk, consistent with their tables."
+    },
+    {
+      "role": "user",
+      "text": "For memory yes: K or k is 1024. For disk, no - reject it with a ValueError. The vendor's provisioning API simply has no kilobyte disk unit, and silently guessing what the author meant is how you misprovision a volume. Better a loud parse failure than a wrong disk."
+    },
+    {
+      "role": "assistant",
+      "text": "So the disk table runs M, G, T decimal and stops there - no K entry at all - while memory runs K through T binary?"
+    },
+    {
+      "role": "user",
+      "text": "Exactly: memory K/M/G/T as 1024 powers, disk M/G/T as 1000 powers, both case-insensitive, and anything outside the table is a ValueError like today."
+    },
+    {
+      "role": "assistant",
+      "text": "On rollout - this changes numbers for existing configs. Straight to the provisioner, or diff first?"
+    },
+    {
+      "role": "user",
+      "text": "Re-render every config in staging with the fixed parser and diff the byte counts against what production currently provisions - I want the list of pods and volumes whose numbers change before we push, so capacity can sign off. Then it goes out with the normal weekly release."
+    },
+    {
+      "role": "assistant",
+      "text": "Recap of parse_quantity: memory suffixes are binary - K=1024, M=1024**2, G=1024**3, T=1024**4 - case-insensitive, and a bare memory number means MiB; disk suffixes are decimal - M=1000**2, G=1000**3, T=1000**4 - case-insensitive, and a bare disk number means GB; 'K' or 'k' is valid for memory only and raises a ValueError for disk, since the vendor API has no kilobyte disk unit. Integers only, whitespace tolerated, unknown suffixes rejected."
     }
   ],
   "function": "parse_quantity",

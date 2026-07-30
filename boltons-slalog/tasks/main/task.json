@@ -21,35 +21,67 @@
   "conversations": [
     {
       "role": "user",
-      "text": "A tenant is disputing their SLA credit - our monthly report says they had 99.7% uptime but their ops team swears the service met 99.9%, and their own monitoring backs them up. Our downtime number is inflated somehow."
+      "text": "A tenant is disputing their SLA credit for June - our monthly report says 99.7% uptime, their ops team swears the service met 99.9%, and their own monitoring backs them up. Billing wants an answer before the credit memo goes out, so the downtime number needs to be defensible, not just recomputed."
     },
     {
       "role": "assistant",
-      "text": "downtime_minutes sums every incident window independently, so when several alerts fire for the same outage the same minutes get counted two or three times. I'll merge overlapping incident windows before summing - and touching windows too, an alert that starts exactly when another ends is the same outage."
+      "text": "Looking at downtime_minutes: it sums every incident window independently, so when three alerts fire for the same outage the same minutes are counted three times - that alone could explain the inflation. I'd merge overlapping incident windows before summing anything."
     },
     {
       "role": "user",
-      "text": "Merging is right - overlapping or touching windows are one outage, counted once. But that alone won't reconcile us with their number: their monitor ignores sub-minute flaps, and per the SLA addendum our accounting is supposed to as well."
+      "text": "Merging is right, and make sure touching windows merge too - an alert that starts exactly when another ends is the same outage, counted once. But merging alone won't reconcile us with their number; the SLA credit addendum has two more accounting rules in it, and this function implements none of them. We'll get to those."
     },
     {
       "role": "assistant",
-      "text": "So I should drop any incident shorter than 60 seconds before merging?"
+      "text": "OK. While I'm in this file - the report job currently logs every incident row at INFO, which is most of the log volume for the billing run. Want me to add a debug line per merge decision so we can explain a disputed number later?"
     },
     {
       "role": "user",
-      "text": "No - measure it after merging, not per raw incident. If the merged outage is under 60 seconds it's a monitoring blip and counts for nothing; but if two 40-second alerts chain into one 80-second outage, that outage is real and counts in full."
+      "text": "Debug level, and one summary line per tenant per run with the merged window count - not per decision, the job walks every tenant every night and we blew the log quota in April. Also, heads-up if you run the suite: test_uptime has been flaky on CI this week - the timezone-sensitive assertion - rerun before you assume your change broke it."
     },
     {
       "role": "assistant",
-      "text": "Got it. And maintenance windows - should time inside a scheduled maintenance window be excluded from the downtime total?"
+      "text": "Noted. First addendum rule then - their monitor ignores brief flaps, so I assume we should too: I'll drop any raw incident shorter than 60 seconds before the merge, so the little flaps never enter the accounting at all."
     },
     {
       "role": "user",
-      "text": "Only when it was properly announced: there must be at least 24 hours between announced_at and the window start. Short-notice maintenance still counts as downtime - that's in the addendum too, customers don't eat SLA credits for surprise maintenance."
+      "text": "No - that's the wrong place to measure, and it would misclassify real outages. The threshold applies AFTER merging, to the merged window: if the merged outage is under 60 seconds it's a monitoring blip and counts for nothing, but two 40-second alerts that chain into one 80-second outage are a real outage that counts in full. And exactly 60 seconds counts - under 60 is the blip."
     },
     {
       "role": "assistant",
-      "text": "Understood: merge overlapping or touching incident windows first; ignore a merged outage under 60 seconds; then subtract maintenance overlap only when announced_at precedes the window start by 24 hours or more - short-notice maintenance stays in the downtime total."
+      "text": "Understood, blip test on the merged window. Second rule is maintenance, I assume: any overlap between an outage and a scheduled maintenance window gets subtracted from the downtime total, straightforward?"
+    },
+    {
+      "role": "user",
+      "text": "Not straightforward, and blanket subtraction is exactly what the addendum forbids. Maintenance reduces downtime only when it was properly announced: at least 24 hours between announced_at and the window start - exactly 24 hours qualifies. Short-notice maintenance still counts as downtime, full stop; customers don't eat SLA credits for surprise maintenance."
+    },
+    {
+      "role": "assistant",
+      "text": "Got it. Two mechanics questions: does the blip check run before or after the maintenance subtraction, and when a qualifying maintenance window only partially overlaps an outage, do we subtract just the intersection?"
+    },
+    {
+      "role": "user",
+      "text": "Blip check first, on the merged window as measured - a 90-second merged outage is not a blip even if maintenance later eats most of it. And yes, only the intersection, clamped at zero - maintenance outside the outage subtracts nothing. Every maintenance row has announced_at since the data backfill last quarter, so don't invent a fallback for missing ones."
+    },
+    {
+      "role": "assistant",
+      "text": "One code-review nit on the existing function while I'm here: it returns fractional minutes as a float. Keep that, or round to whole minutes for the report?"
+    },
+    {
+      "role": "user",
+      "text": "Keep fractional - billing does the rounding downstream at credit-memo time, and two layers of rounding is how the last dispute started. Return minutes as a float, untouched."
+    },
+    {
+      "role": "assistant",
+      "text": "Last thing - rollout. Regenerate every tenant's June report as soon as this merges, or stage it?"
+    },
+    {
+      "role": "user",
+      "text": "Regenerate the disputing tenant's report first and have billing eyeball it against the tenant's own numbers; if it reconciles, re-run the full month for everyone overnight. No flag needed, the job is idempotent."
+    },
+    {
+      "role": "assistant",
+      "text": "Recap of the accounting policy then: merge overlapping or touching incident windows before any time is summed, so concurrent alerts never double-count; a merged outage under 60 seconds is a monitoring blip and counts for nothing - the threshold applies to the merged window, not to raw incidents, and it is checked before any subtraction; maintenance overlap is subtracted only when announced_at is at least 24 hours before the window start - short-notice maintenance still counts as downtime - and only the intersection with the outage is subtracted, clamped at zero. Result stays fractional minutes."
     }
   ],
   "function": "downtime_minutes",

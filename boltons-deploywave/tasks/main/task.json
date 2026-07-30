@@ -21,35 +21,67 @@
   "conversations": [
     {
       "role": "user",
-      "text": "Yesterday's release order looked random again - the checkout blip is back, and a service went out before the thing it reads from had even started rolling."
+      "text": "Yesterday's release order looked random again - the checkout blip is back, and at least one service went out before the thing it reads from had even started rolling. The release channel was not amused."
     },
     {
       "role": "assistant",
-      "text": "plan_waves just returns everything as one alphabetical batch. I'll switch it to topological waves: a service deploys in the wave after its dependencies, alphabetical within a wave."
+      "text": "plan_waves currently returns the whole fleet as one alphabetical batch, so ordering is pure luck. I'll switch it to dependency leveling: a service deploys in the wave after its dependencies, and inside a wave I'll keep it alphabetical by name."
     },
     {
       "role": "user",
-      "text": "Leveling by dependency depth is right - and make it the DEEPEST dependency, a service waits for the last of its deps. But alphabetical inside a wave isn't enough. Every service has a tier field, 0 being the most critical - inside a wave the most critical go first, so tier ascending, and fall back to name A-Z only when tiers tie, so the plan stays deterministic."
+      "text": "Leveling is right, with one precision: a service goes in the wave AFTER its DEEPEST dependency - it waits for the last of its deps, not the first. But alphabetical inside a wave is not enough and I don't want it shipped that way: every service has a tier field, 0 being the most critical. Inside a wave it's tier ascending - tier 0 rolls first - and name A-Z only as the tiebreak, so the plan stays deterministic."
     },
     {
       "role": "assistant",
-      "text": "Understood - depth leveling across waves, tier then name within a wave. Anything else the planner needs to handle?"
+      "text": "Deepest dep for the level, tier-then-name within the wave. While I'm in the planner: do you want a dry-run mode that prints the waves without deploying, for the release channel?"
     },
     {
       "role": "user",
-      "text": "Yes, canaries. Any service marked canary: true doesn't participate in the leveling at all - they form their own wave at the very front, before everything else, whatever their dependencies say."
+      "text": "The deploy driver already has --plan-only; keep plan_waves a pure function that returns lists of names, the tooling does the formatting. And a heads-up: the waves integration test has been flaky on CI - the timing assertion around the mock deployer - rerun before assuming your change did it."
     },
     {
       "role": "assistant",
-      "text": "Even when a canary depends on a service that deploys in a later wave? That inverts the dependency order for it."
+      "text": "Understood. Question about the deps data: some services list dependencies that aren't part of the release at all - shared infra like the message bus. Should those count for leveling?"
     },
     {
       "role": "user",
-      "text": "That's deliberate - ops decision. The canaries exist to validate the release before anything else rolls, and their dependencies are assumed already live from the previous release. Sort the canary wave by name. And when there are no canaries there's no empty wave at the front - the first leveled wave just goes first."
+      "text": "Ignore any dep the planner can't resolve among the services it's leveling - that's external infra, it's already running, it gates nothing. Level only within the release. Next thing you'll hit in the data is the canary flag on some services - that one changes the plan, so ask before guessing."
     },
     {
       "role": "assistant",
-      "text": "Final plan: canaries (if any) form wave 0 ordered by name; every other service lands in the wave after its deepest dependency; within a wave, tier ascending - 0 first - then name A-Z."
+      "text": "I see it - canary: true on a couple of services. My instinct: keep each canary in its leveled wave but move it to the front WITHIN that wave, so it goes first among its peers without violating dependency order."
+    },
+    {
+      "role": "user",
+      "text": "No - that buries the canaries mid-release, which defeats the point of having them. Canaries don't participate in the leveling at all: they form their own wave at the very front, wave 0, before everything else, whatever their dependencies say."
+    },
+    {
+      "role": "assistant",
+      "text": "Even a canary that depends on a service deploying two waves later? That deliberately inverts the dependency order for it."
+    },
+    {
+      "role": "user",
+      "text": "Deliberately, yes - ops decision from the last release retro. The canaries exist to validate the release before anything else rolls, and their dependencies are assumed already live from the previous release; if a canary's dep is actually down, the canary failing IS the early signal we want. Order the canary wave by name."
+    },
+    {
+      "role": "assistant",
+      "text": "OK. When a release has no canaries, should I emit an empty wave 0 anyway so wave indexes stay stable across releases for the dashboards?"
+    },
+    {
+      "role": "user",
+      "text": "No empty leading wave - with no canaries the first leveled wave is simply first. The dashboard keys waves by content, not by index, so don't pad."
+    },
+    {
+      "role": "assistant",
+      "text": "One review nit on the output shape: today it returns lists of names. Keep that, or return the full service dicts per wave?"
+    },
+    {
+      "role": "user",
+      "text": "Names only, as today - three tools parse that output and none of them want dicts. For rollout, regenerate the plans for the last three releases and diff them against what actually shipped; release-eng reviews the deltas before the next real rollout uses the new planner."
+    },
+    {
+      "role": "assistant",
+      "text": "Final wave policy: services marked canary form wave 0, always first, ordered by name - their dependencies are assumed already live from the previous release; every other service deploys in the wave after its DEEPEST in-release dependency, with unresolvable deps ignored; within a wave, tier ascending - tier 0 most critical first - then name A-Z as the tiebreak; and when there are no canaries there is no empty leading wave. plan_waves stays a pure function returning lists of names."
     }
   ],
   "function": "plan_waves",
