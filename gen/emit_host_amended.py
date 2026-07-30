@@ -104,6 +104,62 @@ AMENDED = {
             ],
         ],
     },
+    "tagmerge": {
+        "function": "merge_tags",
+        "policy": ("precedence-ordered case-insensitive union, first-casing wins; tombstones "
+                   "suppress LOWER-precedence sources only (post-amendment)"),
+        "non_guessable": ("the AMENDED scope rule (global -> downward-only tombstones); chat-A's "
+                          "global kill list passes the repro but fails hidden"),
+        "chats": [
+            [
+                {"role": "user", "text": "The source-of-truth migration lands next sprint and merge_tags changes shape: it'll get an ordered list of tag sources — the CMDB first, then the cloud provider, then the legacy inventory, highest precedence first. We need to settle the merge policy before the cutover."},
+                {"role": "assistant", "text": "Then the merge should be a union walked in precedence order, de-duplicated case-insensitively so 'Env:Prod' and 'env:prod' collapse to one tag. When the casings differ, which one survives — and do we lowercase the output?"},
+                {"role": "user", "text": "Never lowercase — the Terraform provider treats casing as significant and our saved searches match exact casing. Keep the casing of the first occurrence, which by construction is the highest-precedence source that asserts the tag. Output order is first occurrence, walking sources in precedence order."},
+                {"role": "assistant", "text": "First-occurrence casing and order, no lowercasing. That leaves the dash-prefixed entries the ops sync writes, like '-decommissioned' — are those junk to filter, or do they mean something?"},
+                {"role": "user", "text": "They're deliberate: '-name' is how ops deletes a tag now — a removal entry. They must never appear in the output as literal tags, and they have to be applied, not just stripped."},
+                {"role": "assistant", "text": "Then the simplest semantics: collect every '-name' across all the sources into one kill list, and strip that tag from the entire merged result no matter which source asserted it."},
+                {"role": "user", "text": "Yes — removed means removed. If any source says '-standby', then 'standby' is gone from the output, full stop; ops shouldn't have to chase which source re-asserts a tag they deleted. Matching is case-insensitive, same as the dedupe, and an entry that matches nothing is silently fine — ops writes them speculatively, erroring would wedge the sync."},
+                {"role": "assistant", "text": "Settled then: merge_tags takes sources highest precedence first; union in precedence order, de-duplicated case-insensitively, keeping the casing of the first (highest-precedence) occurrence, output in first-occurrence order. Every '-name' entry across all sources forms a global kill list: the named tag is removed from the whole result wherever it came from, matched case-insensitively. The dash entries never appear in the output, and an unmatched one is silently ignored."},
+            ],
+            [
+                {"role": "user", "text": "Incident-driven amendment to the tag-merge decision. Last night the legacy inventory sync emitted '-compliance:sox' — someone decommissioning an old box got sloppy — and the merge deleted the compliance:sox tag the CMDB itself asserts on every prod host. The audit scanner keyed off that tag and paged the compliance team at 2am."},
+                {"role": "assistant", "text": "So the global kill list is the flaw: any tombstone from any source removes the tag everywhere, which means the junkiest, lowest-precedence source can delete a tag the source of truth asserts. What's the corrected scope?"},
+                {"role": "user", "text": "A tombstone speaks only for the sources BELOW it. '-standby' from the CMDB still suppresses a 'standby' coming from the provider or the legacy inventory, but a '-critical' from the legacy inventory must never delete a 'critical' the CMDB asserts itself. If a higher-precedence source asserted the tag, it stays — always."},
+                {"role": "assistant", "text": "Downward-only suppression, superseding the removed-means-removed global rule. Do the other tombstone properties stand — matched case-insensitively, never shown in the output, unmatched ones silently fine?"},
+                {"role": "user", "text": "All unchanged, and the union mechanics don't move either. The only thing this amendment changes is the scope: global kill list out, lower-precedence-only in."},
+                {"role": "assistant", "text": "Amended rule in full, superseding the original: sources arrive highest precedence first; union in precedence order, de-duplicated case-insensitively, keeping the casing of the first — highest-precedence — occurrence, output in first-occurrence order. A '-name' tombstone suppresses that tag, matched case-insensitively, from LOWER-precedence sources only; it never removes a tag a higher-precedence source asserted itself. Tombstones never appear in the output, and an unmatched tombstone is silently ignored."},
+                {"role": "user", "text": "That's the rule going forward — the compliance team signed off on exactly that wording."},
+            ],
+        ],
+    },
+    "overage": {
+        "function": "overage_charge",
+        "policy": ("quota prorated by day (ceil); 25-unit grace allowance applied before "
+                   "50-unit block rounding (post-amendment)"),
+        "non_guessable": ("the AMENDED grace rule (no-free-units -> 25-unit allowance before "
+                          "blocking); chat-A's no-grace blocks pass the repro but fail hidden"),
+        "chats": [
+            [
+                {"role": "user", "text": "Finance wants the metering policy for overage_charge nailed down before the next invoice run — right now the code hands out the full monthly quota from day 1 and bills per unit, and neither matches what sales is quoting."},
+                {"role": "assistant", "text": "Two decisions then. First, proration: the included quota should scale by calendar day — allowed so far = plan quota * day_of_month / days_in_month. When that's fractional, do I truncate to a whole unit?"},
+                {"role": "user", "text": "No — round UP to the next whole unit, ceil, always. On day 7 of 30 a 1000-unit plan has 233.33 units included and the customer gets 234. The fractional unit counts in the customer's favor; truncating is how you bill someone over a rounding artifact."},
+                {"role": "assistant", "text": "Ceil proration, and only usage beyond that allowance is overage. Second decision: how does the overage itself bill — keep per-unit at block_fee/50?"},
+                {"role": "user", "text": "Blocks. Overage bills in 50-unit blocks rounded UP to a whole block — a partial block bills as a full block, so 60 units over is two blocks, not 1.2. The invoice line is blocks times plan['block_fee']; finance reconciles in whole blocks and per-unit line items made that impossible last quarter."},
+                {"role": "assistant", "text": "Whole blocks, rounded up. One consequence to flag: a customer who goes a single unit over the prorated allowance bills a full block. Do you want a waiver — say, ignore overages under some threshold?"},
+                {"role": "user", "text": "No waiver. Finance was explicit: any overage bills at least one block — free units are revenue leakage and the plan quotas were priced assuming none. A unit over is a unit over. And keep the ValueError for a day outside 1..days_in_month, that guard has caught real caller bugs."},
+                {"role": "assistant", "text": "Settled: overage_charge validates day_of_month in 1..days_in_month; the included allowance is plan quota * day_of_month / days_in_month rounded UP (ceil, never truncation); overage is usage beyond that allowance and bills in 50-unit blocks rounded UP — no free units, the first overage unit bills a full block — at plan['block_fee'] per block, never per unit."},
+            ],
+            [
+                {"role": "user", "text": "Amendment to the overage policy we settled before launch. A quarter of no-free-units has been brutal: a customer with a 3-unit accidental overrun got a full-block line item and escalated to their exec sponsor, support has been crediting these by hand ever since, and finance now says the manual credits are eating more margin than the policy protects."},
+                {"role": "assistant", "text": "So the fix belongs in the formula, not in support macros. What shape — waive charges under a threshold, or free units off the top of the overage?"},
+                {"role": "user", "text": "Free units: every account gets a grace allowance of 25 overage units per month, and it applies BEFORE the block rounding. Billable = overage minus 25, floored at zero, and only then round up into 50-unit blocks."},
+                {"role": "assistant", "text": "Order of operations matters there: 60 units over with grace first is 35 billable, one block; rounding to blocks first and then knocking 25 units off would still bill two. Confirming: prorate with ceil, then grace, then blocks?"},
+                {"role": "user", "text": "Exactly that sequence — it's the difference support has been crediting by hand. The 3-unit overrun bills nothing now, and nothing else moves: proration stays ceil, blocks stay 50 rounded up, the day guard stays."},
+                {"role": "assistant", "text": "Amended policy, superseding the no-free-units rule: validate day_of_month in 1..days_in_month; included allowance = plan quota * day_of_month / days_in_month rounded UP (ceil); overage = usage beyond that allowance; the first 25 overage units in the month are the free grace allowance, applied BEFORE block rounding (billable = overage - 25, floored at zero); the remainder bills in 50-unit blocks rounded UP — a partial block bills as a full block — at plan['block_fee'] per block, never per unit."},
+                {"role": "user", "text": "That's the policy for the next invoice run — support is retiring the credit macro the same day it ships."},
+            ],
+        ],
+    },
 }
 
 

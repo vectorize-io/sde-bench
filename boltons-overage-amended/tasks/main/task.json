@@ -1,0 +1,91 @@
+{
+  "task_id": "boltons-overage-amended-001",
+  "codebase": "boltons-overage-amended",
+  "build": "build.py",
+  "source": "conversation-amended",
+  "tier": "planted",
+  "category": "numeric-policy",
+  "module": "meterbill/overage.py",
+  "bug_report": "Two customers escalated this week: one was charged mid-month while still under their plan quota, and another's tiny overage got billed the same as a much larger one - support keeps issuing manual credits and they're eating margin. A failing repro is at tests/test_regression.py. Fix overage_charge so invoices follow the metering policy, without breaking existing behaviour.",
+  "fail_to_pass": [
+    "tests/test_regression.py"
+  ],
+  "pass_to_pass": [
+    "tests/test_overage.py"
+  ],
+  "hidden_to_pass": [
+    "tests/test_hidden.py"
+  ],
+  "regression_test_file": "regression_test.py",
+  "hidden_test_file": "hidden_test.py",
+  "conversations": [
+    [
+      {
+        "role": "user",
+        "text": "Finance wants the metering policy for overage_charge nailed down before the next invoice run \u2014 right now the code hands out the full monthly quota from day 1 and bills per unit, and neither matches what sales is quoting."
+      },
+      {
+        "role": "assistant",
+        "text": "Two decisions then. First, proration: the included quota should scale by calendar day \u2014 allowed so far = plan quota * day_of_month / days_in_month. When that's fractional, do I truncate to a whole unit?"
+      },
+      {
+        "role": "user",
+        "text": "No \u2014 round UP to the next whole unit, ceil, always. On day 7 of 30 a 1000-unit plan has 233.33 units included and the customer gets 234. The fractional unit counts in the customer's favor; truncating is how you bill someone over a rounding artifact."
+      },
+      {
+        "role": "assistant",
+        "text": "Ceil proration, and only usage beyond that allowance is overage. Second decision: how does the overage itself bill \u2014 keep per-unit at block_fee/50?"
+      },
+      {
+        "role": "user",
+        "text": "Blocks. Overage bills in 50-unit blocks rounded UP to a whole block \u2014 a partial block bills as a full block, so 60 units over is two blocks, not 1.2. The invoice line is blocks times plan['block_fee']; finance reconciles in whole blocks and per-unit line items made that impossible last quarter."
+      },
+      {
+        "role": "assistant",
+        "text": "Whole blocks, rounded up. One consequence to flag: a customer who goes a single unit over the prorated allowance bills a full block. Do you want a waiver \u2014 say, ignore overages under some threshold?"
+      },
+      {
+        "role": "user",
+        "text": "No waiver. Finance was explicit: any overage bills at least one block \u2014 free units are revenue leakage and the plan quotas were priced assuming none. A unit over is a unit over. And keep the ValueError for a day outside 1..days_in_month, that guard has caught real caller bugs."
+      },
+      {
+        "role": "assistant",
+        "text": "Settled: overage_charge validates day_of_month in 1..days_in_month; the included allowance is plan quota * day_of_month / days_in_month rounded UP (ceil, never truncation); overage is usage beyond that allowance and bills in 50-unit blocks rounded UP \u2014 no free units, the first overage unit bills a full block \u2014 at plan['block_fee'] per block, never per unit."
+      }
+    ],
+    [
+      {
+        "role": "user",
+        "text": "Amendment to the overage policy we settled before launch. A quarter of no-free-units has been brutal: a customer with a 3-unit accidental overrun got a full-block line item and escalated to their exec sponsor, support has been crediting these by hand ever since, and finance now says the manual credits are eating more margin than the policy protects."
+      },
+      {
+        "role": "assistant",
+        "text": "So the fix belongs in the formula, not in support macros. What shape \u2014 waive charges under a threshold, or free units off the top of the overage?"
+      },
+      {
+        "role": "user",
+        "text": "Free units: every account gets a grace allowance of 25 overage units per month, and it applies BEFORE the block rounding. Billable = overage minus 25, floored at zero, and only then round up into 50-unit blocks."
+      },
+      {
+        "role": "assistant",
+        "text": "Order of operations matters there: 60 units over with grace first is 35 billable, one block; rounding to blocks first and then knocking 25 units off would still bill two. Confirming: prorate with ceil, then grace, then blocks?"
+      },
+      {
+        "role": "user",
+        "text": "Exactly that sequence \u2014 it's the difference support has been crediting by hand. The 3-unit overrun bills nothing now, and nothing else moves: proration stays ceil, blocks stay 50 rounded up, the day guard stays."
+      },
+      {
+        "role": "assistant",
+        "text": "Amended policy, superseding the no-free-units rule: validate day_of_month in 1..days_in_month; included allowance = plan quota * day_of_month / days_in_month rounded UP (ceil); overage = usage beyond that allowance; the first 25 overage units in the month are the free grace allowance, applied BEFORE block rounding (billable = overage - 25, floored at zero); the remainder bills in 50-unit blocks rounded UP \u2014 a partial block bills as a full block \u2014 at plan['block_fee'] per block, never per unit."
+      },
+      {
+        "role": "user",
+        "text": "That's the policy for the next invoice run \u2014 support is retiring the credit macro the same day it ships."
+      }
+    ]
+  ],
+  "function": "overage_charge",
+  "policy": "quota prorated by day (ceil); 25-unit grace allowance applied before 50-unit block rounding (post-amendment)",
+  "non_guessable": "the AMENDED grace rule (no-free-units -> 25-unit allowance before blocking); chat-A's no-grace blocks pass the repro but fail hidden",
+  "host": "boltons@979fa9b"
+}

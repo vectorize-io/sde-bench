@@ -1,0 +1,91 @@
+{
+  "task_id": "boltons-tagmerge-amended-001",
+  "codebase": "boltons-tagmerge-amended",
+  "build": "build.py",
+  "source": "conversation-amended",
+  "tier": "planted",
+  "category": "collection-merge",
+  "module": "labelsync/tags.py",
+  "bug_report": "After the source-of-truth migration, resources show tags ops explicitly removed, and some tags appear twice with different capitalization; there are also literal dash-prefixed junk tags in the UI. A failing repro is at tests/test_regression.py. Fix merge_tags so the merged list reflects what the sources actually assert, without breaking existing behaviour.",
+  "fail_to_pass": [
+    "tests/test_regression.py"
+  ],
+  "pass_to_pass": [
+    "tests/test_tagmerge.py"
+  ],
+  "hidden_to_pass": [
+    "tests/test_hidden.py"
+  ],
+  "regression_test_file": "regression_test.py",
+  "hidden_test_file": "hidden_test.py",
+  "conversations": [
+    [
+      {
+        "role": "user",
+        "text": "The source-of-truth migration lands next sprint and merge_tags changes shape: it'll get an ordered list of tag sources \u2014 the CMDB first, then the cloud provider, then the legacy inventory, highest precedence first. We need to settle the merge policy before the cutover."
+      },
+      {
+        "role": "assistant",
+        "text": "Then the merge should be a union walked in precedence order, de-duplicated case-insensitively so 'Env:Prod' and 'env:prod' collapse to one tag. When the casings differ, which one survives \u2014 and do we lowercase the output?"
+      },
+      {
+        "role": "user",
+        "text": "Never lowercase \u2014 the Terraform provider treats casing as significant and our saved searches match exact casing. Keep the casing of the first occurrence, which by construction is the highest-precedence source that asserts the tag. Output order is first occurrence, walking sources in precedence order."
+      },
+      {
+        "role": "assistant",
+        "text": "First-occurrence casing and order, no lowercasing. That leaves the dash-prefixed entries the ops sync writes, like '-decommissioned' \u2014 are those junk to filter, or do they mean something?"
+      },
+      {
+        "role": "user",
+        "text": "They're deliberate: '-name' is how ops deletes a tag now \u2014 a removal entry. They must never appear in the output as literal tags, and they have to be applied, not just stripped."
+      },
+      {
+        "role": "assistant",
+        "text": "Then the simplest semantics: collect every '-name' across all the sources into one kill list, and strip that tag from the entire merged result no matter which source asserted it."
+      },
+      {
+        "role": "user",
+        "text": "Yes \u2014 removed means removed. If any source says '-standby', then 'standby' is gone from the output, full stop; ops shouldn't have to chase which source re-asserts a tag they deleted. Matching is case-insensitive, same as the dedupe, and an entry that matches nothing is silently fine \u2014 ops writes them speculatively, erroring would wedge the sync."
+      },
+      {
+        "role": "assistant",
+        "text": "Settled then: merge_tags takes sources highest precedence first; union in precedence order, de-duplicated case-insensitively, keeping the casing of the first (highest-precedence) occurrence, output in first-occurrence order. Every '-name' entry across all sources forms a global kill list: the named tag is removed from the whole result wherever it came from, matched case-insensitively. The dash entries never appear in the output, and an unmatched one is silently ignored."
+      }
+    ],
+    [
+      {
+        "role": "user",
+        "text": "Incident-driven amendment to the tag-merge decision. Last night the legacy inventory sync emitted '-compliance:sox' \u2014 someone decommissioning an old box got sloppy \u2014 and the merge deleted the compliance:sox tag the CMDB itself asserts on every prod host. The audit scanner keyed off that tag and paged the compliance team at 2am."
+      },
+      {
+        "role": "assistant",
+        "text": "So the global kill list is the flaw: any tombstone from any source removes the tag everywhere, which means the junkiest, lowest-precedence source can delete a tag the source of truth asserts. What's the corrected scope?"
+      },
+      {
+        "role": "user",
+        "text": "A tombstone speaks only for the sources BELOW it. '-standby' from the CMDB still suppresses a 'standby' coming from the provider or the legacy inventory, but a '-critical' from the legacy inventory must never delete a 'critical' the CMDB asserts itself. If a higher-precedence source asserted the tag, it stays \u2014 always."
+      },
+      {
+        "role": "assistant",
+        "text": "Downward-only suppression, superseding the removed-means-removed global rule. Do the other tombstone properties stand \u2014 matched case-insensitively, never shown in the output, unmatched ones silently fine?"
+      },
+      {
+        "role": "user",
+        "text": "All unchanged, and the union mechanics don't move either. The only thing this amendment changes is the scope: global kill list out, lower-precedence-only in."
+      },
+      {
+        "role": "assistant",
+        "text": "Amended rule in full, superseding the original: sources arrive highest precedence first; union in precedence order, de-duplicated case-insensitively, keeping the casing of the first \u2014 highest-precedence \u2014 occurrence, output in first-occurrence order. A '-name' tombstone suppresses that tag, matched case-insensitively, from LOWER-precedence sources only; it never removes a tag a higher-precedence source asserted itself. Tombstones never appear in the output, and an unmatched tombstone is silently ignored."
+      },
+      {
+        "role": "user",
+        "text": "That's the rule going forward \u2014 the compliance team signed off on exactly that wording."
+      }
+    ]
+  ],
+  "function": "merge_tags",
+  "policy": "precedence-ordered case-insensitive union, first-casing wins; tombstones suppress LOWER-precedence sources only (post-amendment)",
+  "non_guessable": "the AMENDED scope rule (global -> downward-only tombstones); chat-A's global kill list passes the repro but fails hidden",
+  "host": "boltons@979fa9b"
+}
