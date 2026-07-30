@@ -32,6 +32,9 @@ CATEGORY = {
     # hard tier batch E (see traps_hard_e.py; buried-decision long conversations)
     "tagmerge": "collection-merge",  # precedence union + first-casing dedupe + scoped tombstones
     "seqledger": "invariant",       # consecutive seq + compaction stride 100 + hash-checked replays
+    # hard tier batch F (see traps_hard_f.py; buried-decision long conversations)
+    "overage": "numeric-policy",    # ceil-prorated quota + 25-unit grace + 50-unit blocks
+    "drainplan": "ordering",        # in-flight shortest-first + idempotent-in-window + deadline drops
 }
 
 CATEGORIES = sorted(set(CATEGORY.values()))

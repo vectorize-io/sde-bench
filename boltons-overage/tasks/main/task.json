@@ -1,0 +1,91 @@
+{
+  "task_id": "boltons-overage-001",
+  "codebase": "boltons-overage",
+  "build": "build.py",
+  "source": "conversation",
+  "tier": "planted",
+  "category": "numeric-policy",
+  "module": "meterbill/overage.py",
+  "bug_report": "Two customers escalated this week: one was charged mid-month while still under their plan quota, and another's tiny overage got billed the same as a much larger one - support keeps issuing manual credits and they're eating margin. A failing repro is at tests/test_regression.py. Fix overage_charge so invoices follow the metering policy, without breaking existing behaviour.",
+  "fail_to_pass": [
+    "tests/test_regression.py"
+  ],
+  "pass_to_pass": [
+    "tests/test_overage.py"
+  ],
+  "hidden_to_pass": [
+    "tests/test_hidden.py"
+  ],
+  "regression_test_file": "regression_test.py",
+  "hidden_test_file": "hidden_test.py",
+  "conversations": [
+    {
+      "role": "user",
+      "text": "Billing escalations again: one customer got charged mid-month and swears they were under their plan quota, another opened a ticket because a 3-unit overrun showed up as a line item at all. Support keeps issuing credits by hand and finance says the credits are eating the margin. Can we make overage_charge actually implement the metering policy instead of whatever it does now?"
+    },
+    {
+      "role": "assistant",
+      "text": "Right now overage_charge treats the full monthly quota as included from day 1 and bills every unit past it at block_fee/50 per unit. First fix: prorate the included quota by calendar day - allowed so far = plan quota * day_of_month / days_in_month - and I'll truncate that to a whole unit with int(), then bill the units beyond it."
+    },
+    {
+      "role": "user",
+      "text": "Proration by calendar day is exactly right - quota * day_of_month / days_in_month, that's the policy wording. But do not truncate the fraction. Round UP to the next whole unit, ceil, always: on day 7 of 30 a 1000-unit plan has 233.33 units included, and the customer gets 234. Truncating down is how you charge someone over a rounding artifact, and that's precisely the kind of escalation we're trying to kill."
+    },
+    {
+      "role": "assistant",
+      "text": "Ceil it is - the fractional unit counts in the customer's favor. While I'm in meterbill: the worker currently logs nothing when it computes a charge. Want a log line per computed charge so support can trace an invoice without re-deriving it?"
+    },
+    {
+      "role": "user",
+      "text": "One debug-level summary per invoice run with counts, not one line per charge - the metering worker touches every subscription nightly and we already tripped the log-volume alert twice this quarter. Also, unrelated heads-up if you run the suite: the usage-exporter test in this package has been flaky on CI all week - timeouts, not correctness - so rerun before you blame your change."
+    },
+    {
+      "role": "assistant",
+      "text": "Noted on both. Back to the charge itself: past the prorated allowance, do we keep billing per unit at block_fee/50? That's what the code does today and it at least makes small overruns cheap."
+    },
+    {
+      "role": "user",
+      "text": "No - per-unit is the other half of the mess. Overage bills in blocks of 50 units, rounded UP to a whole block: a partial block bills as a full block. 60 units over is two blocks, not 1.2 blocks. The invoice line is blocks times plan['block_fee'], and finance reconciles in whole blocks - per-unit line items are what made reconciliation impossible last quarter."
+    },
+    {
+      "role": "assistant",
+      "text": "Whole blocks, always rounded up. Then for the ticket about the 3-unit overrun: under that rule a 3-unit overage still bills one full block. Should I add a minimum threshold - say, waive anything under 10 units - or is the full block intended there?"
+    },
+    {
+      "role": "user",
+      "text": "Neither - there's a piece you haven't been told. After the March billing-support incident we agreed every account gets a grace allowance: the first 25 overage units in a month are free, and the allowance is applied BEFORE the block rounding. So billable = overage minus 25, floored at zero, and only then do you round up into 50-unit blocks. The 3-unit overrun bills nothing, and a 60-unit overage bills 35 billable units, which is one block - not two."
+    },
+    {
+      "role": "assistant",
+      "text": "So the order of operations is fixed: ceil-prorated allowance first, subtract the 25-unit grace from the overage, then round what's left up into 50-unit blocks and multiply by block_fee. If I flipped grace and blocking - rounding to blocks first, then knocking 25 units off - I'd get different invoices."
+    },
+    {
+      "role": "user",
+      "text": "Exactly, and that flipped order is wrong - the sequence is prorate with ceil, then grace, then blocks. It's the difference between the 60-unit case billing one block or two, and support has been crediting exactly that difference by hand."
+    },
+    {
+      "role": "assistant",
+      "text": "Understood. Different topic before I forget - rollout. This changes real invoice amounts; do you want the new computation behind a billing feature flag with a comparison period, or shipped directly?"
+    },
+    {
+      "role": "user",
+      "text": "No flag - billing flags never get cleaned up and then nobody knows which formula produced an invoice. Stage it the usual way: internal tenants for one nightly run, diff the generated invoices against the policy spreadsheet, then everyone. Support already has the macro update queued."
+    },
+    {
+      "role": "assistant",
+      "text": "Will do. Two boundary checks so the tests are right: on the last day of the month the prorated allowance should equal the full quota, and usage exactly at the prorated allowance is not overage at all, correct?"
+    },
+    {
+      "role": "user",
+      "text": "Correct on both - day 30 of 30 includes the whole quota, and usage at or under the allowance owes nothing. The plan dict carries 'quota' and 'block_fee'; keep the ValueError for a day outside 1..days_in_month, that guard has caught real caller bugs."
+    },
+    {
+      "role": "assistant",
+      "text": "Final recap of overage_charge: validate day_of_month is within 1..days_in_month; included allowance = plan quota * day_of_month / days_in_month rounded UP to the next whole unit (ceil, never truncation); overage = usage beyond that allowance; the first 25 overage units in the month are the free grace allowance, applied BEFORE block rounding; the remainder bills in 50-unit blocks rounded UP so a partial block bills as a full block, at plan['block_fee'] per block - never per unit. Prorate with ceil, then grace, then blocks."
+    }
+  ],
+  "function": "overage_charge",
+  "policy": "included quota prorates by calendar day (quota * day_of_month / days_in_month, rounded UP to the next whole unit); first 25 overage units per month are a free grace allowance applied BEFORE block rounding; the remainder bills in 50-unit blocks rounded UP (partial block = full block) at plan['block_fee'] per block, never per unit",
+  "non_guessable": "included quota prorates by calendar day (quota * day_of_month / days_in_month, rounded UP to the next whole unit); first 25 overage units per month are a free grace allowance applied BEFORE block rounding; the remainder bills in 50-unit blocks rounded UP (partial block = full block) at plan['block_fee'] per block, never per unit",
+  "host": "boltons@979fa9b"
+}

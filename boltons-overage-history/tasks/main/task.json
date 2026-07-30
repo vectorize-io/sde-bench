@@ -1,0 +1,26 @@
+{
+  "task_id": "boltons-overage-history-001",
+  "codebase": "boltons-overage-history",
+  "build": "build.py",
+  "source": "history",
+  "tier": "planted",
+  "category": "numeric-policy",
+  "module": "meterbill/overage.py",
+  "policy": "included quota prorates by calendar day (quota * day_of_month / days_in_month, rounded UP to the next whole unit); first 25 overage units per month are a free grace allowance applied BEFORE block rounding; the remainder bills in 50-unit blocks rounded UP (partial block = full block) at plan['block_fee'] per block, never per unit",
+  "bug_report": "Two customers escalated this week: one was charged mid-month while still under their plan quota, and another's tiny overage got billed the same as a much larger one - support keeps issuing manual credits and they're eating margin. A failing repro is at tests/test_regression.py. Fix overage_charge so invoices follow the metering policy, without breaking existing behaviour.",
+  "cause_subject": "perf: simplify overage",
+  "fail_to_pass": [
+    "tests/test_regression.py"
+  ],
+  "pass_to_pass": [
+    "tests/test_overage.py"
+  ],
+  "hidden_to_pass": [
+    "tests/test_hidden.py"
+  ],
+  "regression_test_file": "regression_test.py",
+  "hidden_test_file": "hidden_test.py",
+  "non_guessable": "decision lives in git history (a documented commit), broken by a misleading 'perf' regression commit; git log/blame is the shortcut",
+  "function": "overage_charge",
+  "host": "boltons@979fa9b"
+}

@@ -1,0 +1,99 @@
+{
+  "task_id": "boltons-drainplan-001",
+  "codebase": "boltons-drainplan",
+  "build": "build.py",
+  "source": "conversation",
+  "tier": "planted",
+  "category": "ordering",
+  "module": "workerctl/drain.py",
+  "bug_report": "Rolling restarts take forever - workers sit on long jobs while short ones wait - and a customer's scheduled export ran twice right after a deploy; separately, ops found six-week-old jobs resurrected and executing after last week's restart. A failing repro is at tests/test_regression.py. Fix drain_order so the shutdown plan matches the drain policy, without breaking existing behaviour.",
+  "fail_to_pass": [
+    "tests/test_regression.py"
+  ],
+  "pass_to_pass": [
+    "tests/test_drainplan.py"
+  ],
+  "hidden_to_pass": [
+    "tests/test_hidden.py"
+  ],
+  "regression_test_file": "regression_test.py",
+  "hidden_test_file": "hidden_test.py",
+  "conversations": [
+    {
+      "role": "user",
+      "text": "Three complaints landed after last week's restart wave and they all point at the drain path. Rolling restarts take forever - workers sit on long jobs while short ones wait. A customer's scheduled export ran twice right after the deploy. And ops found jobs from six weeks ago suddenly executing after the restart. Can you look at drain_order in workerctl?"
+    },
+    {
+      "role": "assistant",
+      "text": "Looking at it: when a drain starts it sorts the running jobs by id into run_now and sorts every queued job by id into requeue - that's the whole plan. Straightforward improvement: keep letting in-flight jobs finish, requeue everything queued, and I'll leave both lists id-ordered so the plan stays deterministic."
+    },
+    {
+      "role": "user",
+      "text": "In-flight jobs always finish, yes - never kill running work, that part stays. But id order is why restarts drag: order the in-flight list by remaining estimate ascending, shortest first, so workers free up as fast as possible. That's rule one and it's what bounds the restart time. Use the job id only to break ties on equal estimates, so the plan stays deterministic."
+    },
+    {
+      "role": "assistant",
+      "text": "Shortest remaining first, ids only as tie-break. On the queued side, does everything just go back to the queue then? And while I'm in this module - drains currently log nothing, want per-job log lines when we build the plan?"
+    },
+    {
+      "role": "user",
+      "text": "One summary line per drain with the three list sizes, debug level - a big pool drains hundreds of jobs and per-job lines would flood the collector, we got burned on that with the heartbeat logs. And heads-up: test_drain has a timing-sensitive test that's been flaky on CI this week, so rerun before you assume a red run is yours. On your real question - mostly yes, queued work requeues, but not all of it. There's an exception I'll get to."
+    },
+    {
+      "role": "assistant",
+      "text": "Noted on the logging and the flaky test. For the requeue itself, today it re-sorts by id - should I keep some sort, maybe order the requeued jobs by deadline so the most urgent land at the front of the queue?"
+    },
+    {
+      "role": "user",
+      "text": "No re-sorting at all - requeued jobs keep their ORIGINAL queue order. The queue order is a fairness promise we make to tenants; the id sort silently reordering people's jobs on every deploy caused its own ticket last quarter, and deadline-sorting would do the same thing with a different key. Preserve input order for whatever goes back on the queue."
+    },
+    {
+      "role": "assistant",
+      "text": "Original order preserved, no exceptions on ordering. Now the exception you mentioned for queued work - what doesn't requeue?"
+    },
+    {
+      "role": "user",
+      "text": "The idempotent carve-out. A queued job marked idempotent: true whose deadline falls inside the drain window - now to now + window, the window the caller passes in - runs during the drain instead of requeuing: it can't wait out the restart, and because it's idempotent, running it now is safe even if the requeue path would also pick it up later. Those go into run_now AFTER the in-flight jobs, ordered by deadline ascending, ties by id."
+    },
+    {
+      "role": "assistant",
+      "text": "That's the export story then - the export wasn't idempotent-marked... actually, simpler idea: why not run every idempotent job during the drain regardless of deadline? They're safe to rerun by definition, and it empties the queue faster."
+    },
+    {
+      "role": "user",
+      "text": "No - that's exactly what we can't do. An idempotent job due next week has no business running during a drain; it requeues like everything else and runs on schedule. The carve-out is only for jobs whose deadline lands inside the drain window, because those would blow their deadline waiting for the restart. Deadline in window AND idempotent - both conditions, not either. And to be precise about the export incident: it ran twice because the old code requeued a job the worker had also started - the fix for that class of bug is that only idempotent jobs may ever run during a drain."
+    },
+    {
+      "role": "assistant",
+      "text": "Both conditions, understood. What about queued jobs whose deadline has already passed by the time the drain starts? Right now they'd just requeue and run whenever a worker picks them up."
+    },
+    {
+      "role": "user",
+      "text": "That's the six-weeks-ago resurrection - expired jobs sat in a dead queue segment and the restart requeued them. A queued job whose deadline is already exceeded, deadline strictly before now, gets dropped entirely: not run, not requeued, even if it's marked idempotent - late execution of stale work is precisely the risk. Record the drops though: return them as a third list, dropped, in their original queue order, so the reaper can log and page on them. Never drop silently."
+    },
+    {
+      "role": "assistant",
+      "text": "So the return becomes a three-tuple: run_now, requeue, dropped. Boundary questions so the tests pin the right edges: a deadline exactly equal to now, and one exactly at now + window?"
+    },
+    {
+      "role": "user",
+      "text": "Deadline == now is not exceeded - it requeues, or runs now if it's idempotent, since the window is inclusive on both ends: now <= deadline <= now + window. Deadline == now + window is the last one inside the window. One tick past the window requeues like normal work."
+    },
+    {
+      "role": "assistant",
+      "text": "Inclusive both ends, drops only when deadline < now. On rollout - this changes restart behaviour for every pool; straight to prod or staged?"
+    },
+    {
+      "role": "user",
+      "text": "Staged like the scheduler change: the batch pool first because it drains nightly, watch one drain with the dropped list graphed, then the API pools. No feature flag - drain code with a flag means two drain behaviours in the wild and nobody can reason about a restart."
+    },
+    {
+      "role": "assistant",
+      "text": "Full recap of drain_order(jobs, now, window) -> (run_now, requeue, dropped): in-flight jobs (state 'running') always finish and lead run_now, ordered by remaining estimate ascending with id as tie-break. Queued jobs requeue in their original queue order - no re-sorting - except the idempotent carve-out: queued jobs with idempotent true whose deadline is inside the inclusive window now <= deadline <= now + window run now, placed after the in-flight jobs, ordered by deadline then id. A queued job with deadline < now is dropped entirely - not run, not requeued, even if idempotent - and recorded in dropped, original order, never silently."
+    }
+  ],
+  "function": "drain_order",
+  "policy": "in-flight (running) jobs always finish and lead run_now ordered by remaining estimate ascending (ties by id); queued jobs requeue in ORIGINAL queue order, except idempotent jobs whose deadline is inside the inclusive drain window (now <= deadline <= now + window) run now after the in-flight jobs, ordered by deadline then id; queued jobs with deadline < now are dropped entirely (even idempotent ones) and recorded in the third returned list, original order",
+  "non_guessable": "in-flight (running) jobs always finish and lead run_now ordered by remaining estimate ascending (ties by id); queued jobs requeue in ORIGINAL queue order, except idempotent jobs whose deadline is inside the inclusive drain window (now <= deadline <= now + window) run now after the in-flight jobs, ordered by deadline then id; queued jobs with deadline < now are dropped entirely (even idempotent ones) and recorded in the third returned list, original order",
+  "host": "boltons@979fa9b"
+}

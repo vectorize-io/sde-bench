@@ -1,0 +1,26 @@
+{
+  "task_id": "boltons-drainplan-history-001",
+  "codebase": "boltons-drainplan-history",
+  "build": "build.py",
+  "source": "history",
+  "tier": "planted",
+  "category": "ordering",
+  "module": "workerctl/drain.py",
+  "policy": "in-flight (running) jobs always finish and lead run_now ordered by remaining estimate ascending (ties by id); queued jobs requeue in ORIGINAL queue order, except idempotent jobs whose deadline is inside the inclusive drain window (now <= deadline <= now + window) run now after the in-flight jobs, ordered by deadline then id; queued jobs with deadline < now are dropped entirely (even idempotent ones) and recorded in the third returned list, original order",
+  "bug_report": "Rolling restarts take forever - workers sit on long jobs while short ones wait - and a customer's scheduled export ran twice right after a deploy; separately, ops found six-week-old jobs resurrected and executing after last week's restart. A failing repro is at tests/test_regression.py. Fix drain_order so the shutdown plan matches the drain policy, without breaking existing behaviour.",
+  "cause_subject": "perf: simplify drain",
+  "fail_to_pass": [
+    "tests/test_regression.py"
+  ],
+  "pass_to_pass": [
+    "tests/test_drainplan.py"
+  ],
+  "hidden_to_pass": [
+    "tests/test_hidden.py"
+  ],
+  "regression_test_file": "regression_test.py",
+  "hidden_test_file": "hidden_test.py",
+  "non_guessable": "decision lives in git history (a documented commit), broken by a misleading 'perf' regression commit; git log/blame is the shortcut",
+  "function": "drain_order",
+  "host": "boltons@979fa9b"
+}
