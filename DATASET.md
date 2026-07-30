@@ -65,28 +65,42 @@ used as a fixture (cloned, not vendored). Its **~1500 real commit subjects + rat
 the memory store as retrieval noise, plus decoy chats — so surfacing the right decision is a real
 ranking problem, not a lookup.
 
-## Tasks (19)
+## Tasks (33)
 
 | task | source | tier | category | module/fn | non-guessable policy |
 |---|---|---|---|---|---|
 | budget | conversation | planted | numeric-policy | `retryx/retry.py` | exactly 7 (measured to the rate-limit window) |
+| csvquote | conversation | planted | invariant | `erpexport/writer.py` | leading-zero digit strings written as `="…"` text form; minimal quoting; CRLF |
+| dedupe | conversation | planted | collection-merge | `crmsync/dedupe.py` | dup key=(email.lower, same calendar day); most-filled wins; tie -> primary |
 | discount | conversation | planted | ordering | `billing/discount.py` | percent discounts apply before fixed-amount |
 | findhashtags | conversation | real-function | filter-rule | `boltons/strutils.py` | drop all-numeric tags EXCEPT 4-digit years (1900-2099) |
 | listmerge | conversation | planted | collection-merge | `confmerge/merge.py` | union list values (de-duplicated, base order first) |
 | parseflag | conversation | planted | set-membership | `cfg/flags.py` | truthy set is exactly {'true','on'} |
 | pluralize | conversation | real-function | mapping | `boltons/strutils.py` | formal/DB plurals person->persons, index->indexes, matrix->matrixes |
+| redact | conversation | planted | filter-rule | `logsafe/redact.py` | suffix-match {password,token,api_key,ssn,card_number} recursively; card keeps last4; email not masked |
+| retryjitter | conversation | planted | set-membership | `httpretry/policy.py` | retry 5xx plus exactly {429,408}; max 4 attempts; backoff cap 30s |
 | rounding | conversation | planted | numeric-policy | `pay/rounding.py` | round half-cents DOWN (ROUND_HALF_DOWN) |
+| sched | conversation | planted | ordering | `jobsched/picker.py` | priority desc; tie -> shorter est_runtime; same tenant never back-to-back |
 | slugify | conversation | real-function | mapping | `boltons/strutils.py` | SEO symbol map & to and, $ to usd, % to pct |
+| trimstats | conversation | planted | numeric-policy | `metricsagg/latency.py` | drop exactly the top 2 of each 60-sample window, then nearest-rank p95 |
 | under2camel | conversation | real-function | set-membership | `boltons/strutils.py` | acronym set {HTTP,API,SKU,GDPR} uppercase; db/sql/url stay title-cased |
+| dedupe-amended | conversation-amended | planted | collection-merge | `crmsync/dedupe.py` | the amended conflict rule (chat A's keep-latest is a proven naive) |
+| retryjitter-amended | conversation-amended | planted | set-membership | `httpretry/policy.py` | the amended rule (adds 408, cap 60->30s); chat A's rule passes repro, fails hidden |
 | budget-history | history | planted | numeric-policy | `retryx/retry.py` | exactly 7 (measured to the rate-limit window) |
+| csvquote-history | history | planted | invariant | `erpexport/writer.py` | leading-zero digit strings written as `="…"` text form; minimal quoting; CRLF |
+| dedupe-history | history | planted | collection-merge | `crmsync/dedupe.py` | dup key=(email.lower, same calendar day); most-filled wins; tie -> primary |
 | discount-history | history | planted | ordering | `billing/discount.py` | percent discounts apply before fixed-amount |
 | findhashtags-history | history | real-function | filter-rule | `boltons/strutils.py` | drop all-numeric tags EXCEPT 4-digit years (1900-2099) |
 | listmerge-history | history | planted | collection-merge | `confmerge/merge.py` | union list values (de-duplicated, base order first) |
 | omdset | history | real-function | invariant | `boltons/dictutils.py` | __setitem__ must reset the underlying value list to [v] after _remove_all (not reuse add() |
 | parseflag-history | history | planted | set-membership | `cfg/flags.py` | truthy set is exactly {'true','on'} |
 | pluralize-history | history | real-function | mapping | `boltons/strutils.py` | formal/DB plurals person->persons, index->indexes, matrix->matrixes |
+| redact-history | history | planted | filter-rule | `logsafe/redact.py` | suffix-match {password,token,api_key,ssn,card_number} recursively; card keeps last4; email not masked |
+| retryjitter-history | history | planted | set-membership | `httpretry/policy.py` | retry 5xx plus exactly {429,408}; max 4 attempts; backoff cap 30s |
 | rounding-history | history | planted | numeric-policy | `pay/rounding.py` | round half-cents DOWN (ROUND_HALF_DOWN) |
+| sched-history | history | planted | ordering | `jobsched/picker.py` | priority desc; tie -> shorter est_runtime; same tenant never back-to-back |
 | slugify-history | history | real-function | mapping | `boltons/strutils.py` | SEO symbol map & to and, $ to usd, % to pct |
+| trimstats-history | history | planted | numeric-policy | `metricsagg/latency.py` | drop exactly the top 2 of each 60-sample window, then nearest-rank p95 |
 | under2camel-history | history | real-function | set-membership | `boltons/strutils.py` | acronym set {HTTP,API,SKU,GDPR} uppercase; db/sql/url stay title-cased |
 
 Per-task metadata is in each `task.json` (`source`, `tier`, `category`, `module`, `function`,
@@ -119,14 +133,14 @@ per-arm results live in the runner,
 This repo is the **dataset**. To validate structural integrity:
 
 ```
-python validate.py            # 10 boltons-* tasks: fields, tests parse, manifest consistency
+python validate.py            # all boltons-* tasks: fields, tests parse, manifest consistency
 ```
 
 To actually run the benchmark (build each task's repo, drive an agent, grade in Docker, count
 interventions), use the runner in
 [open-memory-benchmark](https://github.com/vectorize-io/open-memory-benchmark), which mounts this repo
 as a submodule at `sdebench/datasets` and runs e.g.
-`uv run omb run --dataset sdebench --split boltons --mode coding --memory {none|hindsight-http}`.
+`uv run omb run --dataset sdebench --split boltons --mode coding --memory {none|hscoding}`.
 
 boltons is © Mahmoud Hashemi, BSD — used unmodified as a fixture. Traps, planted modules, tests,
 chats, and this datasheet are this project's.

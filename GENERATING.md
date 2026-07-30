@@ -30,7 +30,11 @@ Each task is tagged on three orthogonal axes (see `DATASET.md` for the full trea
   - **`history`** — in the repo's **git history** (a real commit's rationale), later dropped by a regression.
     Reachable with `git log`/`blame`. Example: `boltons-omdset`.
   - **`conversation`** — only in a past **developer chat** (`task.json.conversations`), never written to the
-    repo. Unreachable without a memory system that captured the chat. (15 of 31 tasks.)
+    repo. Unreachable without a memory system that captured the chat.
+  - **`conversation-amended`** — settled in an early chat and **amended in a later one**; only the
+    amended rule is correct, and the pre-amendment rule is one of the trap's proven naive fixes.
+    Emitted by `gen/emit_host_amended.py`. Tests cross-chat consolidation.
+  (Counts per source live in `MANIFEST.json.by_source` — the manifest, not this file, is the census.)
 - **tier** — how the trap is hosted (see next section).
 - **category** — the *kind* of decision (`gen/categories.py`): mapping, set-membership,
   numeric-policy, ordering, collection-merge, filter-rule, invariant.
