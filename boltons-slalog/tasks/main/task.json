@@ -51,5 +51,9 @@
       "role": "assistant",
       "text": "Understood: merge overlapping or touching incident windows first; ignore a merged outage under 60 seconds; then subtract maintenance overlap only when announced_at precedes the window start by 24 hours or more - short-notice maintenance stays in the downtime total."
     }
-  ]
+  ],
+  "function": "downtime_minutes",
+  "policy": "merge overlapping incident windows; ignore merged blips <60s; exclude maintenance ONLY when announced >=24h before start",
+  "non_guessable": "merge overlapping incident windows; ignore merged blips <60s; exclude maintenance ONLY when announced >=24h before start",
+  "host": "boltons@979fa9b"
 }

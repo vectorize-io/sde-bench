@@ -65,7 +65,7 @@ used as a fixture (cloned, not vendored). Its **~1500 real commit subjects + rat
 the memory store as retrieval noise, plus decoy chats — so surfacing the right decision is a real
 ranking problem, not a lookup.
 
-## Tasks (33)
+## Tasks (43)
 
 | task | source | tier | category | module/fn | non-guessable policy |
 |---|---|---|---|---|---|
@@ -84,8 +84,14 @@ ranking problem, not a lookup.
 | slugify | conversation | real-function | mapping | `boltons/strutils.py` | SEO symbol map & to and, $ to usd, % to pct |
 | trimstats | conversation | planted | numeric-policy | `metricsagg/latency.py` | drop exactly the top 2 of each 60-sample window, then nearest-rank p95 |
 | under2camel | conversation | real-function | set-membership | `boltons/strutils.py` | acronym set {HTTP,API,SKU,GDPR} uppercase; db/sql/url stay title-cased |
+| slalog | conversation | planted | filter-rule | `slalog/uptime.py` | merge overlapping incident windows; ignore merged blips <60s; exclude maintenance ONLY if announced >=24h ahead |
+| unitparse | conversation | planted | mapping | `infraconf/units.py` | memory suffixes binary (bare = MiB); disk suffixes decimal (bare = GB); K rejected for disk |
+| statetrans | conversation | planted | invariant | `orderflow/transitions.py` | pinned transition map; cancelled ONLY from {pending,on_hold}; refunded ONLY from returned; case-insensitive in, lowercase stored |
+| deploywave | conversation | planted | ordering | `shipctl/waves.py` | waves by dependency depth; within a wave tier asc then name; canaries always wave 0 |
 | dedupe-amended | conversation-amended | planted | collection-merge | `crmsync/dedupe.py` | the amended conflict rule (chat A's keep-latest is a proven naive) |
 | retryjitter-amended | conversation-amended | planted | set-membership | `httpretry/policy.py` | the amended rule (adds 408, cap 60->30s); chat A's rule passes repro, fails hidden |
+| slalog-amended | conversation-amended | planted | filter-rule | `slalog/uptime.py` | the amended maintenance rule (subtract-all -> 24h-notice only); chat A's rule is a proven naive |
+| unitparse-amended | conversation-amended | planted | mapping | `infraconf/units.py` | the amended disk semantics (uniform-binary -> decimal disk, bare GB, K invalid); chat A's rule is a proven naive |
 | budget-history | history | planted | numeric-policy | `retryx/retry.py` | exactly 7 (measured to the rate-limit window) |
 | csvquote-history | history | planted | invariant | `erpexport/writer.py` | leading-zero digit strings written as `="…"` text form; minimal quoting; CRLF |
 | dedupe-history | history | planted | collection-merge | `crmsync/dedupe.py` | dup key=(email.lower, same calendar day); most-filled wins; tie -> primary |
@@ -100,8 +106,12 @@ ranking problem, not a lookup.
 | rounding-history | history | planted | numeric-policy | `pay/rounding.py` | round half-cents DOWN (ROUND_HALF_DOWN) |
 | sched-history | history | planted | ordering | `jobsched/picker.py` | priority desc; tie -> shorter est_runtime; same tenant never back-to-back |
 | slugify-history | history | real-function | mapping | `boltons/strutils.py` | SEO symbol map & to and, $ to usd, % to pct |
+| slalog-history | history | planted | filter-rule | `slalog/uptime.py` | merge overlapping incident windows; ignore merged blips <60s; exclude maintenance ONLY if announced >=24h ahead |
+| statetrans-history | history | planted | invariant | `orderflow/transitions.py` | pinned transition map; cancelled ONLY from {pending,on_hold}; refunded ONLY from returned |
 | trimstats-history | history | planted | numeric-policy | `metricsagg/latency.py` | drop exactly the top 2 of each 60-sample window, then nearest-rank p95 |
 | under2camel-history | history | real-function | set-membership | `boltons/strutils.py` | acronym set {HTTP,API,SKU,GDPR} uppercase; db/sql/url stay title-cased |
+| unitparse-history | history | planted | mapping | `infraconf/units.py` | memory suffixes binary (bare = MiB); disk suffixes decimal (bare = GB); K rejected for disk |
+| deploywave-history | history | planted | ordering | `shipctl/waves.py` | waves by dependency depth; within a wave tier asc then name; canaries always wave 0 |
 
 Per-task metadata is in each `task.json` (`source`, `tier`, `category`, `module`, `function`,
 `policy`, `non_guessable`); summary + `by_source`/`by_tier`/`by_category` counts in `MANIFEST.json`.

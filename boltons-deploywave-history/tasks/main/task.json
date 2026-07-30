@@ -20,5 +20,7 @@
   ],
   "regression_test_file": "regression_test.py",
   "hidden_test_file": "hidden_test.py",
-  "non_guessable": "decision lives in git history (a documented commit), broken by a misleading 'perf' regression commit; git log/blame is the shortcut"
+  "non_guessable": "decision lives in git history (a documented commit), broken by a misleading 'perf' regression commit; git log/blame is the shortcut",
+  "function": "plan_waves",
+  "host": "boltons@979fa9b"
 }

@@ -1,298 +1,378 @@
 {
- "dataset": "sde-bench",
- "host": "boltons (github.com/mahmoud/boltons) @ 979fa9b",
- "n_tasks": 33,
- "by_source": {
-  "conversation": 15,
-  "conversation-amended": 2,
-  "history": 16
- },
- "by_tier": {
-  "planted": 24,
-  "real-function": 9
- },
- "by_category": {
-  "collection-merge": 5,
-  "filter-rule": 4,
-  "invariant": 3,
-  "mapping": 4,
-  "numeric-policy": 6,
-  "ordering": 4,
-  "set-membership": 7
- },
- "categories": [
-  "collection-merge",
-  "filter-rule",
-  "invariant",
-  "mapping",
-  "numeric-policy",
-  "ordering",
-  "set-membership"
- ],
- "tasks": [
-  {
-   "task_id": "boltons-budget-001",
-   "source": "conversation",
-   "tier": "planted",
-   "category": "numeric-policy",
-   "function": "MAX_ATTEMPTS",
-   "policy": "exactly 7 (measured to the rate-limit window)"
+  "dataset": "sde-bench",
+  "host": "boltons (github.com/mahmoud/boltons) @ 979fa9b",
+  "n_tasks": 43,
+  "by_source": {
+    "conversation": 19,
+    "conversation-amended": 4,
+    "history": 20
   },
-  {
-   "task_id": "boltons-budget-history-001",
-   "source": "history",
-   "tier": "planted",
-   "category": "numeric-policy",
-   "function": null,
-   "policy": "exactly 7 (measured to the rate-limit window)"
+  "by_tier": {
+    "planted": 34,
+    "real-function": 9
   },
-  {
-   "task_id": "boltons-csvquote-001",
-   "source": "conversation",
-   "tier": "planted",
-   "category": "invariant",
-   "function": "to_csv",
-   "policy": "leading-zero digit strings written as =\"...\" text form; minimal quoting; CRLF"
+  "by_category": {
+    "collection-merge": 5,
+    "filter-rule": 7,
+    "invariant": 5,
+    "mapping": 7,
+    "numeric-policy": 6,
+    "ordering": 6,
+    "set-membership": 7
   },
-  {
-   "task_id": "boltons-csvquote-history-001",
-   "source": "history",
-   "tier": "planted",
-   "category": "invariant",
-   "function": "to_csv",
-   "policy": "leading-zero digit strings written as =\"...\" text form; minimal quoting; CRLF"
-  },
-  {
-   "task_id": "boltons-dedupe-001",
-   "source": "conversation",
-   "tier": "planted",
-   "category": "collection-merge",
-   "function": "merge_records",
-   "policy": "dup key=(email.lower, same calendar day); most-filled wins; tie -> primary"
-  },
-  {
-   "task_id": "boltons-dedupe-amended-001",
-   "source": "conversation-amended",
-   "tier": "planted",
-   "category": "collection-merge",
-   "function": "merge_records",
-   "policy": "dup key=(email.lower, same day); most-filled wins; tie -> primary (post-amendment)"
-  },
-  {
-   "task_id": "boltons-dedupe-history-001",
-   "source": "history",
-   "tier": "planted",
-   "category": "collection-merge",
-   "function": "merge_records",
-   "policy": "dup key=(email.lower, same calendar day); most-filled wins; tie -> primary"
-  },
-  {
-   "task_id": "boltons-discount-001",
-   "source": "conversation",
-   "tier": "planted",
-   "category": "ordering",
-   "function": "apply_discounts",
-   "policy": "percent discounts apply before fixed-amount"
-  },
-  {
-   "task_id": "boltons-discount-history-001",
-   "source": "history",
-   "tier": "planted",
-   "category": "ordering",
-   "function": null,
-   "policy": "percent discounts apply before fixed-amount"
-  },
-  {
-   "task_id": "boltons-findhashtags-001",
-   "source": "conversation",
-   "tier": "real-function",
-   "category": "filter-rule",
-   "function": "find_hashtags",
-   "policy": "drop all-numeric tags EXCEPT 4-digit years (1900-2099)"
-  },
-  {
-   "task_id": "boltons-findhashtags-history-001",
-   "source": "history",
-   "tier": "real-function",
-   "category": "filter-rule",
-   "function": null,
-   "policy": "drop all-numeric tags EXCEPT 4-digit years (1900-2099)"
-  },
-  {
-   "task_id": "boltons-listmerge-001",
-   "source": "conversation",
-   "tier": "planted",
-   "category": "collection-merge",
-   "function": "apply_updates",
-   "policy": "union list values (de-duplicated, base order first)"
-  },
-  {
-   "task_id": "boltons-listmerge-history-001",
-   "source": "history",
-   "tier": "planted",
-   "category": "collection-merge",
-   "function": null,
-   "policy": "union list values (de-duplicated, base order first)"
-  },
-  {
-   "task_id": "boltons-omdset-001",
-   "source": "history",
-   "tier": "real-function",
-   "category": "invariant",
-   "function": "OrderedMultiDict.__setitem__",
-   "policy": "__setitem__ must reset the underlying value list to [v] after _remove_all (not reuse add(), which appends to the stale list)"
-  },
-  {
-   "task_id": "boltons-parseflag-001",
-   "source": "conversation",
-   "tier": "planted",
-   "category": "set-membership",
-   "function": "parse_flag",
-   "policy": "truthy set is exactly {'true','on'}"
-  },
-  {
-   "task_id": "boltons-parseflag-history-001",
-   "source": "history",
-   "tier": "planted",
-   "category": "set-membership",
-   "function": null,
-   "policy": "truthy set is exactly {'true','on'}"
-  },
-  {
-   "task_id": "boltons-pluralize-001",
-   "source": "conversation",
-   "tier": "real-function",
-   "category": "mapping",
-   "function": "pluralize",
-   "policy": "formal/DB plurals person->persons, index->indexes, matrix->matrixes"
-  },
-  {
-   "task_id": "boltons-pluralize-history-001",
-   "source": "history",
-   "tier": "real-function",
-   "category": "mapping",
-   "function": null,
-   "policy": "formal/DB plurals person->persons, index->indexes, matrix->matrixes"
-  },
-  {
-   "task_id": "boltons-redact-001",
-   "source": "conversation",
-   "tier": "planted",
-   "category": "filter-rule",
-   "function": "redact",
-   "policy": "suffix-match {password,token,api_key,ssn,card_number} recursively; card keeps last4; email stays"
-  },
-  {
-   "task_id": "boltons-redact-history-001",
-   "source": "history",
-   "tier": "planted",
-   "category": "filter-rule",
-   "function": "redact",
-   "policy": "suffix-match {password,token,api_key,ssn,card_number} recursively; card keeps last4; email stays"
-  },
-  {
-   "task_id": "boltons-retryjitter-001",
-   "source": "conversation",
-   "tier": "planted",
-   "category": "set-membership",
-   "function": "should_retry",
-   "policy": "retry 5xx plus exactly {429,408}; max 4 attempts; backoff cap 30s"
-  },
-  {
-   "task_id": "boltons-retryjitter-amended-001",
-   "source": "conversation-amended",
-   "tier": "planted",
-   "category": "set-membership",
-   "function": "should_retry",
-   "policy": "retry 5xx plus exactly {429,408}; max 4 attempts; backoff cap 30s (post-amendment)"
-  },
-  {
-   "task_id": "boltons-retryjitter-history-001",
-   "source": "history",
-   "tier": "planted",
-   "category": "set-membership",
-   "function": "should_retry",
-   "policy": "retry 5xx plus exactly {429,408}; max 4 attempts; backoff cap 30s"
-  },
-  {
-   "task_id": "boltons-rounding-001",
-   "source": "conversation",
-   "tier": "planted",
-   "category": "numeric-policy",
-   "function": "round_cents",
-   "policy": "round half-cents DOWN (ROUND_HALF_DOWN)"
-  },
-  {
-   "task_id": "boltons-rounding-history-001",
-   "source": "history",
-   "tier": "planted",
-   "category": "numeric-policy",
-   "function": null,
-   "policy": "round half-cents DOWN (ROUND_HALF_DOWN)"
-  },
-  {
-   "task_id": "boltons-sched-001",
-   "source": "conversation",
-   "tier": "planted",
-   "category": "ordering",
-   "function": "next_job",
-   "policy": "priority desc; tie -> shorter est_runtime; same tenant never back-to-back"
-  },
-  {
-   "task_id": "boltons-sched-history-001",
-   "source": "history",
-   "tier": "planted",
-   "category": "ordering",
-   "function": "next_job",
-   "policy": "priority desc; tie -> shorter est_runtime; same tenant never back-to-back"
-  },
-  {
-   "task_id": "boltons-slugify-001",
-   "source": "conversation",
-   "tier": "real-function",
-   "category": "mapping",
-   "function": "slugify",
-   "policy": "SEO symbol map & to and, $ to usd, % to pct"
-  },
-  {
-   "task_id": "boltons-slugify-history-001",
-   "source": "history",
-   "tier": "real-function",
-   "category": "mapping",
-   "function": null,
-   "policy": "SEO symbol map & to and, $ to usd, % to pct"
-  },
-  {
-   "task_id": "boltons-trimstats-001",
-   "source": "conversation",
-   "tier": "planted",
-   "category": "numeric-policy",
-   "function": "window_p95",
-   "policy": "drop exactly the top 2 of each 60-sample window, then nearest-rank p95"
-  },
-  {
-   "task_id": "boltons-trimstats-history-001",
-   "source": "history",
-   "tier": "planted",
-   "category": "numeric-policy",
-   "function": "window_p95",
-   "policy": "drop exactly the top 2 of each 60-sample window, then nearest-rank p95"
-  },
-  {
-   "task_id": "boltons-under2camel-001",
-   "source": "conversation",
-   "tier": "real-function",
-   "category": "set-membership",
-   "function": "under2camel",
-   "policy": "acronym set {HTTP,API,SKU,GDPR} uppercase; db/sql/url stay title-cased"
-  },
-  {
-   "task_id": "boltons-under2camel-history-001",
-   "source": "history",
-   "tier": "real-function",
-   "category": "set-membership",
-   "function": null,
-   "policy": "acronym set {HTTP,API,SKU,GDPR} uppercase; db/sql/url stay title-cased"
-  }
- ]
+  "categories": [
+    "collection-merge",
+    "filter-rule",
+    "invariant",
+    "mapping",
+    "numeric-policy",
+    "ordering",
+    "set-membership"
+  ],
+  "tasks": [
+    {
+      "task_id": "boltons-budget-history-001",
+      "source": "history",
+      "tier": "planted",
+      "category": "numeric-policy",
+      "function": null,
+      "policy": "exactly 7 (measured to the rate-limit window)"
+    },
+    {
+      "task_id": "boltons-budget-001",
+      "source": "conversation",
+      "tier": "planted",
+      "category": "numeric-policy",
+      "function": "MAX_ATTEMPTS",
+      "policy": "exactly 7 (measured to the rate-limit window)"
+    },
+    {
+      "task_id": "boltons-csvquote-history-001",
+      "source": "history",
+      "tier": "planted",
+      "category": "invariant",
+      "function": "to_csv",
+      "policy": "leading-zero digit strings written as =\"...\" text form; minimal quoting; CRLF"
+    },
+    {
+      "task_id": "boltons-csvquote-001",
+      "source": "conversation",
+      "tier": "planted",
+      "category": "invariant",
+      "function": "to_csv",
+      "policy": "leading-zero digit strings written as =\"...\" text form; minimal quoting; CRLF"
+    },
+    {
+      "task_id": "boltons-dedupe-amended-001",
+      "source": "conversation-amended",
+      "tier": "planted",
+      "category": "collection-merge",
+      "function": "merge_records",
+      "policy": "dup key=(email.lower, same day); most-filled wins; tie -> primary (post-amendment)"
+    },
+    {
+      "task_id": "boltons-dedupe-history-001",
+      "source": "history",
+      "tier": "planted",
+      "category": "collection-merge",
+      "function": "merge_records",
+      "policy": "dup key=(email.lower, same calendar day); most-filled wins; tie -> primary"
+    },
+    {
+      "task_id": "boltons-dedupe-001",
+      "source": "conversation",
+      "tier": "planted",
+      "category": "collection-merge",
+      "function": "merge_records",
+      "policy": "dup key=(email.lower, same calendar day); most-filled wins; tie -> primary"
+    },
+    {
+      "task_id": "boltons-deploywave-history-001",
+      "source": "history",
+      "tier": "planted",
+      "category": "ordering",
+      "function": "plan_waves",
+      "policy": ""
+    },
+    {
+      "task_id": "boltons-deploywave-001",
+      "source": "conversation",
+      "tier": "planted",
+      "category": "ordering",
+      "function": "plan_waves",
+      "policy": "waves by dependency depth; within a wave tier asc then name; canary services always wave 0 (deps assumed already live)"
+    },
+    {
+      "task_id": "boltons-discount-history-001",
+      "source": "history",
+      "tier": "planted",
+      "category": "ordering",
+      "function": null,
+      "policy": "percent discounts apply before fixed-amount"
+    },
+    {
+      "task_id": "boltons-discount-001",
+      "source": "conversation",
+      "tier": "planted",
+      "category": "ordering",
+      "function": "apply_discounts",
+      "policy": "percent discounts apply before fixed-amount"
+    },
+    {
+      "task_id": "boltons-findhashtags-history-001",
+      "source": "history",
+      "tier": "real-function",
+      "category": "filter-rule",
+      "function": null,
+      "policy": "drop all-numeric tags EXCEPT 4-digit years (1900-2099)"
+    },
+    {
+      "task_id": "boltons-findhashtags-001",
+      "source": "conversation",
+      "tier": "real-function",
+      "category": "filter-rule",
+      "function": "find_hashtags",
+      "policy": "drop all-numeric tags EXCEPT 4-digit years (1900-2099)"
+    },
+    {
+      "task_id": "boltons-listmerge-history-001",
+      "source": "history",
+      "tier": "planted",
+      "category": "collection-merge",
+      "function": null,
+      "policy": "union list values (de-duplicated, base order first)"
+    },
+    {
+      "task_id": "boltons-listmerge-001",
+      "source": "conversation",
+      "tier": "planted",
+      "category": "collection-merge",
+      "function": "apply_updates",
+      "policy": "union list values (de-duplicated, base order first)"
+    },
+    {
+      "task_id": "boltons-omdset-001",
+      "source": "history",
+      "tier": "real-function",
+      "category": "invariant",
+      "function": "OrderedMultiDict.__setitem__",
+      "policy": "__setitem__ must reset the underlying value list to [v] after _remove_all (not reuse add(), which appends to the stale list)"
+    },
+    {
+      "task_id": "boltons-parseflag-history-001",
+      "source": "history",
+      "tier": "planted",
+      "category": "set-membership",
+      "function": null,
+      "policy": "truthy set is exactly {'true','on'}"
+    },
+    {
+      "task_id": "boltons-parseflag-001",
+      "source": "conversation",
+      "tier": "planted",
+      "category": "set-membership",
+      "function": "parse_flag",
+      "policy": "truthy set is exactly {'true','on'}"
+    },
+    {
+      "task_id": "boltons-pluralize-history-001",
+      "source": "history",
+      "tier": "real-function",
+      "category": "mapping",
+      "function": null,
+      "policy": "formal/DB plurals person->persons, index->indexes, matrix->matrixes"
+    },
+    {
+      "task_id": "boltons-pluralize-001",
+      "source": "conversation",
+      "tier": "real-function",
+      "category": "mapping",
+      "function": "pluralize",
+      "policy": "formal/DB plurals person->persons, index->indexes, matrix->matrixes"
+    },
+    {
+      "task_id": "boltons-redact-history-001",
+      "source": "history",
+      "tier": "planted",
+      "category": "filter-rule",
+      "function": "redact",
+      "policy": "suffix-match {password,token,api_key,ssn,card_number} recursively; card keeps last4; email stays"
+    },
+    {
+      "task_id": "boltons-redact-001",
+      "source": "conversation",
+      "tier": "planted",
+      "category": "filter-rule",
+      "function": "redact",
+      "policy": "suffix-match {password,token,api_key,ssn,card_number} recursively; card keeps last4; email stays"
+    },
+    {
+      "task_id": "boltons-retryjitter-amended-001",
+      "source": "conversation-amended",
+      "tier": "planted",
+      "category": "set-membership",
+      "function": "should_retry",
+      "policy": "retry 5xx plus exactly {429,408}; max 4 attempts; backoff cap 30s (post-amendment)"
+    },
+    {
+      "task_id": "boltons-retryjitter-history-001",
+      "source": "history",
+      "tier": "planted",
+      "category": "set-membership",
+      "function": "should_retry",
+      "policy": "retry 5xx plus exactly {429,408}; max 4 attempts; backoff cap 30s"
+    },
+    {
+      "task_id": "boltons-retryjitter-001",
+      "source": "conversation",
+      "tier": "planted",
+      "category": "set-membership",
+      "function": "should_retry",
+      "policy": "retry 5xx plus exactly {429,408}; max 4 attempts; backoff cap 30s"
+    },
+    {
+      "task_id": "boltons-rounding-history-001",
+      "source": "history",
+      "tier": "planted",
+      "category": "numeric-policy",
+      "function": null,
+      "policy": "round half-cents DOWN (ROUND_HALF_DOWN)"
+    },
+    {
+      "task_id": "boltons-rounding-001",
+      "source": "conversation",
+      "tier": "planted",
+      "category": "numeric-policy",
+      "function": "round_cents",
+      "policy": "round half-cents DOWN (ROUND_HALF_DOWN)"
+    },
+    {
+      "task_id": "boltons-sched-history-001",
+      "source": "history",
+      "tier": "planted",
+      "category": "ordering",
+      "function": "next_job",
+      "policy": "priority desc; tie -> shorter est_runtime; same tenant never back-to-back"
+    },
+    {
+      "task_id": "boltons-sched-001",
+      "source": "conversation",
+      "tier": "planted",
+      "category": "ordering",
+      "function": "next_job",
+      "policy": "priority desc; tie -> shorter est_runtime; same tenant never back-to-back"
+    },
+    {
+      "task_id": "boltons-slalog-amended-001",
+      "source": "conversation-amended",
+      "tier": "planted",
+      "category": "filter-rule",
+      "function": "downtime_minutes",
+      "policy": "merge overlapping incident windows; ignore merged blips <60s; exclude maintenance ONLY when announced >=24h before start (post-amendment)"
+    },
+    {
+      "task_id": "boltons-slalog-history-001",
+      "source": "history",
+      "tier": "planted",
+      "category": "filter-rule",
+      "function": "downtime_minutes",
+      "policy": ""
+    },
+    {
+      "task_id": "boltons-slalog-001",
+      "source": "conversation",
+      "tier": "planted",
+      "category": "filter-rule",
+      "function": "downtime_minutes",
+      "policy": "merge overlapping incident windows; ignore merged blips <60s; exclude maintenance ONLY when announced >=24h before start"
+    },
+    {
+      "task_id": "boltons-slugify-history-001",
+      "source": "history",
+      "tier": "real-function",
+      "category": "mapping",
+      "function": null,
+      "policy": "SEO symbol map & to and, $ to usd, % to pct"
+    },
+    {
+      "task_id": "boltons-slugify-001",
+      "source": "conversation",
+      "tier": "real-function",
+      "category": "mapping",
+      "function": "slugify",
+      "policy": "SEO symbol map & to and, $ to usd, % to pct"
+    },
+    {
+      "task_id": "boltons-statetrans-history-001",
+      "source": "history",
+      "tier": "planted",
+      "category": "invariant",
+      "function": "advance",
+      "policy": ""
+    },
+    {
+      "task_id": "boltons-statetrans-001",
+      "source": "conversation",
+      "tier": "planted",
+      "category": "invariant",
+      "function": "advance",
+      "policy": "pinned transition map; cancelled ONLY from {pending,on_hold}; refunded ONLY from returned; case-insensitive input, lowercase canonical state"
+    },
+    {
+      "task_id": "boltons-trimstats-history-001",
+      "source": "history",
+      "tier": "planted",
+      "category": "numeric-policy",
+      "function": "window_p95",
+      "policy": "drop exactly the top 2 of each 60-sample window, then nearest-rank p95"
+    },
+    {
+      "task_id": "boltons-trimstats-001",
+      "source": "conversation",
+      "tier": "planted",
+      "category": "numeric-policy",
+      "function": "window_p95",
+      "policy": "drop exactly the top 2 of each 60-sample window, then nearest-rank p95"
+    },
+    {
+      "task_id": "boltons-under2camel-history-001",
+      "source": "history",
+      "tier": "real-function",
+      "category": "set-membership",
+      "function": null,
+      "policy": "acronym set {HTTP,API,SKU,GDPR} uppercase; db/sql/url stay title-cased"
+    },
+    {
+      "task_id": "boltons-under2camel-001",
+      "source": "conversation",
+      "tier": "real-function",
+      "category": "set-membership",
+      "function": "under2camel",
+      "policy": "acronym set {HTTP,API,SKU,GDPR} uppercase; db/sql/url stay title-cased"
+    },
+    {
+      "task_id": "boltons-unitparse-amended-001",
+      "source": "conversation-amended",
+      "tier": "planted",
+      "category": "mapping",
+      "function": "parse_quantity",
+      "policy": "memory suffixes binary (bare = MiB); disk suffixes decimal (bare = GB); K rejected for disk (post-amendment)"
+    },
+    {
+      "task_id": "boltons-unitparse-history-001",
+      "source": "history",
+      "tier": "planted",
+      "category": "mapping",
+      "function": "parse_quantity",
+      "policy": ""
+    },
+    {
+      "task_id": "boltons-unitparse-001",
+      "source": "conversation",
+      "tier": "planted",
+      "category": "mapping",
+      "function": "parse_quantity",
+      "policy": "memory suffixes binary (bare = MiB); disk suffixes decimal (bare = GB); K rejected for disk"
+    }
+  ]
 }

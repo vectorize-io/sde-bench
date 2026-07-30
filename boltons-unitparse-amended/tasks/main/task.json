@@ -1,0 +1,71 @@
+{
+  "task_id": "boltons-unitparse-amended-001",
+  "codebase": "boltons-unitparse-amended",
+  "build": "build.py",
+  "source": "conversation-amended",
+  "tier": "planted",
+  "category": "mapping",
+  "module": "infraconf/units.py",
+  "bug_report": "Since we migrated configs to the new parser, pods are being OOM-killed right after deploy - containers come up with less memory than their config asks for - and disk quotas also look slightly off on some volumes. A failing repro is at tests/test_regression.py. Fix parse_quantity so provisioned resources match the configs, without breaking existing behaviour.",
+  "fail_to_pass": [
+    "tests/test_regression.py"
+  ],
+  "pass_to_pass": [
+    "tests/test_unitparse.py"
+  ],
+  "hidden_to_pass": [
+    "tests/test_hidden.py"
+  ],
+  "regression_test_file": "regression_test.py",
+  "hidden_test_file": "hidden_test.py",
+  "conversations": [
+    [
+      {
+        "role": "user",
+        "text": "Config migration broke sizing: '512' in the old files meant half a gig of RAM and the new parser reads it as 512 bytes, so pods get OOM-killed on start."
+      },
+      {
+        "role": "assistant",
+        "text": "Then bare numbers need a sane default unit, and the suffixes should be the Kubernetes-style powers of two. I'd make every suffix binary \u2014 K is 1024, M is 1024\u00b2, G is 1024\u00b3 \u2014 for memory and disk alike."
+      },
+      {
+        "role": "user",
+        "text": "One uniform table for both kinds, yes \u2014 nobody will remember two systems. And a bare number is mebibytes, whatever the kind."
+      },
+      {
+        "role": "assistant",
+        "text": "Settled: parse_quantity uses binary multipliers for every suffix on both memory and disk, case-insensitive, and a bare number always means MiB."
+      }
+    ],
+    [
+      {
+        "role": "user",
+        "text": "Amendment to the units decision: finance reconciled the storage bill and our provisioner is over-allocating disks \u2014 the storage vendor sells decimal gigabytes, not binary."
+      },
+      {
+        "role": "assistant",
+        "text": "So disk splits off from memory: disk suffixes become decimal \u2014 M is 1000\u00b2, G is 1000\u00b3, T is 1000\u2074 \u2014 while memory stays binary as decided?"
+      },
+      {
+        "role": "user",
+        "text": "Exactly. Bare disk numbers mean decimal gigabytes now, since that's the vendor's billing unit. Memory keeps binary suffixes and the bare-MiB default."
+      },
+      {
+        "role": "assistant",
+        "text": "And kilobytes on disk? The vendor API has no such unit."
+      },
+      {
+        "role": "user",
+        "text": "Reject it \u2014 a K suffix on a disk quantity is a config error, raise instead of guessing. K stays valid for memory."
+      },
+      {
+        "role": "assistant",
+        "text": "Amended rule, superseding uniform-binary: memory = binary suffixes, bare MiB; disk = decimal suffixes, bare GB, K invalid (ValueError). That's the split going forward."
+      }
+    ]
+  ],
+  "function": "parse_quantity",
+  "policy": "memory suffixes binary (bare = MiB); disk suffixes decimal (bare = GB); K rejected for disk (post-amendment)",
+  "non_guessable": "the AMENDED disk semantics (uniform-binary -> decimal for disk, bare GB, K invalid); the chat-A rule passes the repro but fails hidden",
+  "host": "boltons@979fa9b"
+}

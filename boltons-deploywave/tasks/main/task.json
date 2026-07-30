@@ -51,5 +51,9 @@
       "role": "assistant",
       "text": "Final plan: canaries (if any) form wave 0 ordered by name; every other service lands in the wave after its deepest dependency; within a wave, tier ascending - 0 first - then name A-Z."
     }
-  ]
+  ],
+  "function": "plan_waves",
+  "policy": "waves by dependency depth; within a wave tier asc then name; canary services always wave 0 (deps assumed already live)",
+  "non_guessable": "waves by dependency depth; within a wave tier asc then name; canary services always wave 0 (deps assumed already live)",
+  "host": "boltons@979fa9b"
 }

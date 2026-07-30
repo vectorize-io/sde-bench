@@ -51,5 +51,9 @@
       "role": "assistant",
       "text": "Confirmed: memory suffixes are binary and case-insensitive with bare values in MiB; disk suffixes are decimal with bare values in GB; 'K' is valid for memory only and raises a ValueError for disk."
     }
-  ]
+  ],
+  "function": "parse_quantity",
+  "policy": "memory suffixes binary (bare = MiB); disk suffixes decimal (bare = GB); K rejected for disk",
+  "non_guessable": "memory suffixes binary (bare = MiB); disk suffixes decimal (bare = GB); K rejected for disk",
+  "host": "boltons@979fa9b"
 }

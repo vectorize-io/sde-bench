@@ -51,5 +51,9 @@
       "role": "assistant",
       "text": "Final map: pending -> paid/on_hold/cancelled; paid -> shipped/on_hold only, never straight to cancelled; on_hold -> pending/cancelled; shipped -> returned; returned -> refunded, the only way into refunded; cancelled and refunded terminal. Inputs match case-insensitively and the stored state is always lowercase."
     }
-  ]
+  ],
+  "function": "advance",
+  "policy": "pinned transition map; cancelled ONLY from {pending,on_hold}; refunded ONLY from returned; case-insensitive input, lowercase canonical state",
+  "non_guessable": "pinned transition map; cancelled ONLY from {pending,on_hold}; refunded ONLY from returned; case-insensitive input, lowercase canonical state",
+  "host": "boltons@979fa9b"
 }
