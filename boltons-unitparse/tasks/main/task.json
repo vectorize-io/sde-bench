@@ -1,0 +1,55 @@
+{
+  "task_id": "boltons-unitparse-001",
+  "codebase": "boltons-unitparse",
+  "build": "build.py",
+  "source": "conversation",
+  "tier": "planted",
+  "category": "mapping",
+  "module": "infraconf/units.py",
+  "bug_report": "Since we migrated configs to the new parser, pods are being OOM-killed right after deploy - containers come up with less memory than their config asks for - and disk quotas also look slightly off on some volumes. A failing repro is at tests/test_regression.py. Fix parse_quantity so provisioned resources match the configs, without breaking existing behaviour.",
+  "fail_to_pass": [
+    "tests/test_regression.py"
+  ],
+  "pass_to_pass": [
+    "tests/test_unitparse.py"
+  ],
+  "hidden_to_pass": [
+    "tests/test_hidden.py"
+  ],
+  "regression_test_file": "regression_test.py",
+  "hidden_test_file": "hidden_test.py",
+  "conversations": [
+    {
+      "role": "user",
+      "text": "We rolled out the new config parser and pods started getting OOM-killed within minutes of deploy - containers come up with way less memory than their config asks for. Storage also says some volumes ended up a few percent smaller than expected."
+    },
+    {
+      "role": "assistant",
+      "text": "parse_quantity is reading every suffix as decimal - '2G' of memory becomes 2*10**9 bytes, short of the 2 GiB the container needs. I'll switch all suffixes to binary, 1024-based, like Kubernetes' Gi."
+    },
+    {
+      "role": "user",
+      "text": "Binary for memory only. The cgroup limits the vendor API sets are 1024-based, so '1G' - or '1g', casing must not matter - of memory means exactly 1024**3 bytes. But disk stays decimal: storage is billed and partitioned in decimal units, '1G' of disk is exactly 1000**3."
+    },
+    {
+      "role": "assistant",
+      "text": "Understood, the mapping depends on the resource kind. And a bare number with no suffix - raw bytes for both kinds?"
+    },
+    {
+      "role": "user",
+      "text": "No. A bare memory value means MiB - that's what all the legacy templates meant, so 256 is 256*1024**2 bytes. A bare disk value means GB, 1000**3 per unit."
+    },
+    {
+      "role": "assistant",
+      "text": "Should the 'K' suffix work for both kinds - 1024 for memory, 1000 for disk?"
+    },
+    {
+      "role": "user",
+      "text": "For memory yes, K or k is 1024. For disk reject it with a ValueError: the vendor's provisioning API has no kilobyte disk unit, and silently guessing a size would misprovision the volume."
+    },
+    {
+      "role": "assistant",
+      "text": "Confirmed: memory suffixes are binary and case-insensitive with bare values in MiB; disk suffixes are decimal with bare values in GB; 'K' is valid for memory only and raises a ValueError for disk."
+    }
+  ]
+}

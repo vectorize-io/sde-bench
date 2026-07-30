@@ -40,7 +40,8 @@ H_MSG = {
         "are NOT truthy — ops relied on that to disable features by setting '1'. Keep the truthy set "
         "exactly {'true','on'}; do not widen it."),
 }
-for _n in ("dedupe", "trimstats", "sched", "redact", "retryjitter", "csvquote"):
+for _n in ("dedupe", "trimstats", "sched", "redact", "retryjitter", "csvquote",
+           "slalog", "unitparse"):
     H_MSG[_n] = (TRAPS[_n]["decision_subject"], TRAPS[_n]["decision_rationale"])
 TASKS = list(H_MSG)
 

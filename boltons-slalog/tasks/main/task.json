@@ -1,0 +1,55 @@
+{
+  "task_id": "boltons-slalog-001",
+  "codebase": "boltons-slalog",
+  "build": "build.py",
+  "source": "conversation",
+  "tier": "planted",
+  "category": "filter-rule",
+  "module": "slalog/uptime.py",
+  "bug_report": "A tenant is disputing their monthly SLA report: our report says 99.7% uptime for the period, but their ops team swears the service met 99.9% and their own monitoring agrees. downtime_minutes is producing a bigger number than the outage time the tenant actually experienced. A failing repro is at tests/test_regression.py. Fix downtime_minutes so the report matches real downtime, without breaking existing behaviour.",
+  "fail_to_pass": [
+    "tests/test_regression.py"
+  ],
+  "pass_to_pass": [
+    "tests/test_slalog.py"
+  ],
+  "hidden_to_pass": [
+    "tests/test_hidden.py"
+  ],
+  "regression_test_file": "regression_test.py",
+  "hidden_test_file": "hidden_test.py",
+  "conversations": [
+    {
+      "role": "user",
+      "text": "A tenant is disputing their SLA credit - our monthly report says they had 99.7% uptime but their ops team swears the service met 99.9%, and their own monitoring backs them up. Our downtime number is inflated somehow."
+    },
+    {
+      "role": "assistant",
+      "text": "downtime_minutes sums every incident window independently, so when several alerts fire for the same outage the same minutes get counted two or three times. I'll merge overlapping incident windows before summing - and touching windows too, an alert that starts exactly when another ends is the same outage."
+    },
+    {
+      "role": "user",
+      "text": "Merging is right - overlapping or touching windows are one outage, counted once. But that alone won't reconcile us with their number: their monitor ignores sub-minute flaps, and per the SLA addendum our accounting is supposed to as well."
+    },
+    {
+      "role": "assistant",
+      "text": "So I should drop any incident shorter than 60 seconds before merging?"
+    },
+    {
+      "role": "user",
+      "text": "No - measure it after merging, not per raw incident. If the merged outage is under 60 seconds it's a monitoring blip and counts for nothing; but if two 40-second alerts chain into one 80-second outage, that outage is real and counts in full."
+    },
+    {
+      "role": "assistant",
+      "text": "Got it. And maintenance windows - should time inside a scheduled maintenance window be excluded from the downtime total?"
+    },
+    {
+      "role": "user",
+      "text": "Only when it was properly announced: there must be at least 24 hours between announced_at and the window start. Short-notice maintenance still counts as downtime - that's in the addendum too, customers don't eat SLA credits for surprise maintenance."
+    },
+    {
+      "role": "assistant",
+      "text": "Understood: merge overlapping or touching incident windows first; ignore a merged outage under 60 seconds; then subtract maintenance overlap only when announced_at precedes the window start by 24 hours or more - short-notice maintenance stays in the downtime total."
+    }
+  ]
+}

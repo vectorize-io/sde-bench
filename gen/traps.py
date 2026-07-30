@@ -339,5 +339,7 @@ for _n in TRAPS:
 # ── hard tier (2026-07 hardening): multi-part policies, wide hidden tests ──
 from traps_hard_a import TRAPS_HARD_A as _HARD_A
 from traps_hard_b import TRAPS_HARD_B as _HARD_B
+from traps_hard_c import TRAPS_HARD_C as _HARD_C
 TRAPS.update(_HARD_A)
 TRAPS.update(_HARD_B)
+TRAPS.update(_HARD_C)

@@ -1,0 +1,24 @@
+{
+  "task_id": "boltons-unitparse-history-001",
+  "codebase": "boltons-unitparse-history",
+  "build": "build.py",
+  "source": "history",
+  "tier": "planted",
+  "category": "mapping",
+  "module": "infraconf/units.py",
+  "policy": "",
+  "bug_report": "Since we migrated configs to the new parser, pods are being OOM-killed right after deploy - containers come up with less memory than their config asks for - and disk quotas also look slightly off on some volumes. A failing repro is at tests/test_regression.py. Fix parse_quantity so provisioned resources match the configs, without breaking existing behaviour.",
+  "cause_subject": "perf: simplify units",
+  "fail_to_pass": [
+    "tests/test_regression.py"
+  ],
+  "pass_to_pass": [
+    "tests/test_unitparse.py"
+  ],
+  "hidden_to_pass": [
+    "tests/test_hidden.py"
+  ],
+  "regression_test_file": "regression_test.py",
+  "hidden_test_file": "hidden_test.py",
+  "non_guessable": "decision lives in git history (a documented commit), broken by a misleading 'perf' regression commit; git log/blame is the shortcut"
+}

@@ -23,6 +23,9 @@ CATEGORY = {
     "redact": "filter-rule",        # suffix-match set + card last4 + email carve-out
     "retryjitter": "set-membership",  # retryable statuses {5xx,429,408} + caps
     "csvquote": "invariant",        # leading-zero round-trip via ="..." + CRLF
+    # hard tier batch C (see traps_hard_c.py)
+    "slalog": "filter-rule",        # window merge + sub-minute blip carve-out + maintenance notice gate
+    "unitparse": "mapping",         # suffix -> bytes mapping that depends on the resource kind
 }
 
 CATEGORIES = sorted(set(CATEGORY.values()))
