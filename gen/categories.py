@@ -38,6 +38,9 @@ CATEGORY = {
     # hard tier batch G (see traps_hard_g.py; buried-decision long conversations)
     "hostallow": "set-membership",  # lowercase-normalized exact set + single-label wildcards + exact-only IPs
     "mimemap": "mapping",           # pinned case-insensitive extension table + dotfile carve-out
+    # hard tier batch I (see traps_hard_i.py; buried-decision long conversations)
+    "cachekey": "filter-rule",      # tracking-drop set + utm_content carve-out + empty-value drop + surgical normalization
+    "featflag": "invariant",        # pinned per-flag hash input + strict < boundary + corp-beta-only override
 }
 
 CATEGORIES = sorted(set(CATEGORY.values()))

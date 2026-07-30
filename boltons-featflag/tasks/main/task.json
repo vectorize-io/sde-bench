@@ -1,0 +1,99 @@
+{
+  "task_id": "boltons-featflag-001",
+  "codebase": "boltons-featflag",
+  "build": "build.py",
+  "source": "conversation",
+  "tier": "planted",
+  "category": "invariant",
+  "module": "flagcore/bucket.py",
+  "bug_report": "Support says the same accounts get every experimental feature at once - a user enrolled in one experiment is somehow enrolled in all of them. An internal dashboard flag was visible to a real customer, and the rollout percentages we configure never match the enrolled counts analytics reports. A failing repro is at tests/test_regression.py. Fix bucket so rollout membership behaves as configured, without breaking existing behaviour.",
+  "fail_to_pass": [
+    "tests/test_regression.py"
+  ],
+  "pass_to_pass": [
+    "tests/test_featflag.py"
+  ],
+  "hidden_to_pass": [
+    "tests/test_hidden.py"
+  ],
+  "regression_test_file": "regression_test.py",
+  "hidden_test_file": "hidden_test.py",
+  "conversations": [
+    {
+      "role": "user",
+      "text": "Three flag-platform complaints landed this week and I think they're one bug. Support says the same accounts end up in every experimental feature at once - a user who got the new checkout also got new nav, new search, all of it. An internal dashboard flag showed up for a real customer. And every rollout we run, the percentage we set never matches the enrolled count analytics reports. Can you dig into bucket() in flagcore?"
+    },
+    {
+      "role": "assistant",
+      "text": "Looked at it - bucket() hashes ONLY the user id: crc32(user_id) % 100, compared against percent. So a user's bucket number is identical for every flag; anyone under 30 is in every 30% experiment simultaneously. That's your correlated-cohorts complaint in one line. My plan: hash the user and the flag together so each flag gets an independent shuffle - I'll concatenate flag_name + user_id and crc32 that - and while I'm in there, force corp accounts into every flag so the team can dogfood."
+    },
+    {
+      "role": "user",
+      "text": "The direction is right but both details are wrong, and both wrongnesses have history. The hash input is pinned: user_id + \":\" + flag_name, colon separator, exactly that string. Analytics recomputes the same crc32 on their side to attribute events, so the bytes must match exactly - and plain concatenation without a separator is collision-prone anyway. This exact input string came out of the post-incident review after the cross-flag correlation mess, so treat it as an interface, not an implementation detail."
+    },
+    {
+      "role": "assistant",
+      "text": "user, colon, flag - crc32 over the utf-8 bytes, mod 100, and it's a contract with analytics. Noted. Unrelated while I'm in the file: assignments are completely silent today. Want me to log each bucketing decision so support can answer 'why did this user get the feature'?"
+    },
+    {
+      "role": "user",
+      "text": "Sampled metric, not logs - bucket() runs on every request and full logging would melt the collector; a counter by (flag, in/out) plus a debug endpoint that recomputes one user on demand covers the support case. Also heads-up: the flag-sync test in the flagcore suite has been flaky on CI all week - infra says timeout, not correctness - rerun before you suspect your change."
+    },
+    {
+      "role": "assistant",
+      "text": "Counter plus on-demand recompute, got it. Now the comparison: today it's bucket <= percent. Keep that convention and document it, or switch to strict less-than?"
+    },
+    {
+      "role": "user",
+      "text": "Strict less-than, and this one matters more than it looks: bucket < percent. With buckets 0..99, percent=0 must enroll NOBODY and percent=100 must enroll everybody. The current <= means percent=0 still enrolls the bucket-0 users - about 1% of traffic silently in every 'disabled' experiment - and it's a chunk of why our rollout numbers never reconcile with analytics."
+    },
+    {
+      "role": "assistant",
+      "text": "So < it is: 0 is truly off, 100 is truly on. Back to my corp idea then - forcing @corp.example accounts into every flag for dogfooding. You said it was wrong; what's the actual rule?"
+    },
+    {
+      "role": "user",
+      "text": "Scoped, not blanket. Corp accounts - user ids ending @corp.example - are always in ONLY when the flag name starts with beta-. That's the internal-beta convention: teams name dogfood flags beta-something and every corp employee sees them. For any other flag, corp users bucket exactly like customers - a blanket corp override is precisely how the internal dashboard flag leaked: it wasn't a beta- flag, someone force-included staff, and a shared demo account counted as staff."
+    },
+    {
+      "role": "assistant",
+      "text": "Understood - the override keys on BOTH ends: corp domain AND the beta- prefix, otherwise normal bucketing. Ordering question: does the corp check happen before or after the percent math? At percent=0 on beta-newui, is a corp user in or out?"
+    },
+    {
+      "role": "user",
+      "text": "In. The corp-beta override is absolute and evaluated first - a beta- flag at 0% still shows for every corp account; that's what makes 'create the flag at 0, dogfood internally, then ramp' work. The percent only governs the hashed population."
+    },
+    {
+      "role": "assistant",
+      "text": "Override first, hash second. Rollout logistics: changing the hash input reshuffles every existing cohort - users will flip in and out of running experiments at deploy. Do we need a migration, like keeping the old hash for flags created before the fix?"
+    },
+    {
+      "role": "user",
+      "text": "No dual-hash - we take the one-time churn. Running experiments restart their measurement window after the deploy; product signed off. A frozen legacy hash means carrying the correlated bug forever for old flags, which is worse. Ship it as one cutover."
+    },
+    {
+      "role": "assistant",
+      "text": "One cutover, no legacy path. Two edge validations while I write tests: percent arrives as an int 0..100 from the flag store - do I clamp or validate here? And any unicode concerns in user ids before crc32?"
+    },
+    {
+      "role": "user",
+      "text": "Neither belongs in bucket(): the flag store validates percent at write time, so assume 0..100 and don't clamp - a clamp would hide store bugs. And encode the input string as utf-8 before crc32, always - ids are ASCII today but the encode call is part of matching analytics byte-for-byte."
+    },
+    {
+      "role": "assistant",
+      "text": "No clamping, explicit utf-8 encode. Last check on determinism: no per-process salt, no time component - the same (user, flag, percent) triple must answer the same everywhere, or the debug endpoint and analytics reattribution both break. Confirmed?"
+    },
+    {
+      "role": "user",
+      "text": "Confirmed, fully deterministic. Recap it so we're aligned before the PR."
+    },
+    {
+      "role": "assistant",
+      "text": "Recap of bucket(user_id, flag_name, percent): first the override - user ids ending @corp.example are always in when and ONLY when the flag name starts with beta- (the internal-beta convention); every other flag buckets corp users normally. Otherwise hash user_id + \":\" + flag_name - the colon separator pinned, byte-for-byte the string analytics recomputes - as crc32 of the utf-8 bytes, bucket = crc % 100, and the user is in iff bucket < percent, strictly: percent=0 nobody, percent=100 everybody. No clamping, no salt, fully deterministic."
+    }
+  ],
+  "function": "bucket",
+  "policy": "the bucketing hash input is user_id + \":\" + flag_name - per-flag independence with the colon separator pinned byte-for-byte (analytics recomputes the same crc32; decided after the cross-flag correlation incident where users landed in every experiment at once); hash = crc32 of the utf-8 bytes, bucket = crc % 100; a user is IN when bucket < percent (strictly: percent=0 enrolls nobody, percent=100 enrolls everybody); user ids ending @corp.example are ALWAYS in but ONLY when the flag name starts with beta- (the internal-beta convention) - for every other flag corp users bucket normally",
+  "non_guessable": "the bucketing hash input is user_id + \":\" + flag_name - per-flag independence with the colon separator pinned byte-for-byte (analytics recomputes the same crc32; decided after the cross-flag correlation incident where users landed in every experiment at once); hash = crc32 of the utf-8 bytes, bucket = crc % 100; a user is IN when bucket < percent (strictly: percent=0 enrolls nobody, percent=100 enrolls everybody); user ids ending @corp.example are ALWAYS in but ONLY when the flag name starts with beta- (the internal-beta convention) - for every other flag corp users bucket normally",
+  "host": "boltons@979fa9b"
+}

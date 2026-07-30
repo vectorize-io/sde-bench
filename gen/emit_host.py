@@ -76,5 +76,5 @@ if __name__ == "__main__":   # guard: importing this module must NOT (re)emit/ov
     for n in ("rounding", "listmerge", "budget", "discount", "parseflag",
               "dedupe", "trimstats", "sched", "redact", "retryjitter", "csvquote",
               "slalog", "unitparse", "statetrans", "deploywave", "tagmerge", "seqledger",
-              "overage", "drainplan", "hostallow", "mimemap"):
+              "overage", "drainplan", "hostallow", "mimemap", "cachekey", "featflag"):
         print("emitted host task:", emit(n))

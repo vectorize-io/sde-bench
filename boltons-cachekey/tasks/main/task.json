@@ -1,0 +1,91 @@
+{
+  "task_id": "boltons-cachekey-001",
+  "codebase": "boltons-cachekey",
+  "build": "build.py",
+  "source": "conversation",
+  "tier": "planted",
+  "category": "filter-rule",
+  "module": "edgecache/keys.py",
+  "bug_report": "Since the ad campaign launched, the edge cache hit-rate has cratered and the CDN bill nearly doubled - origin egress is spiking on pages that should be cached. Separately, two customers report seeing someone else's experiment variant on pages our analytics says belong to the other cohort. A failing repro is at tests/test_regression.py. Fix cache_key so equivalent requests share a cache entry, without breaking existing behaviour.",
+  "fail_to_pass": [
+    "tests/test_regression.py"
+  ],
+  "pass_to_pass": [
+    "tests/test_cachekey.py"
+  ],
+  "hidden_to_pass": [
+    "tests/test_hidden.py"
+  ],
+  "regression_test_file": "regression_test.py",
+  "hidden_test_file": "hidden_test.py",
+  "conversations": [
+    {
+      "role": "user",
+      "text": "Since marketing launched the paid campaigns, the edge cache hit-rate graph fell off a cliff and the CDN invoice nearly doubled - origin egress is way up. On top of that, two customers filed tickets saying the product page they see doesn't match the experiment cohort our analytics says they're in. All of it smells like edgecache - can you look at cache_key in keys.py?"
+    },
+    {
+      "role": "assistant",
+      "text": "Found it fast: cache_key returns the URL string as-is. Every ad click appends gclid and a bag of utm_ params with unique values, so each click is a distinct key - that's the hit-rate cliff and the bill. My plan: parse the query, sort the params, drop everything that looks like tracking - all utm_* plus gclid, fbclid, msclkid - and while I'm at it normalize hard: lowercase the whole URL and strip trailing slashes so near-identical URLs collapse to one key."
+    },
+    {
+      "role": "user",
+      "text": "Sorting is right, and the drop list is close - but two corrections before you write code. The drop set is exact: every utm_ param EXCEPT utm_content, plus exactly gclid, fbclid and msclkid - no fuzzy 'looks like tracking' heuristics beyond those. utm_content stays in the key: that's a standing agreement with marketing-eng, because utm_content routes which A/B feature experience the page renders. Fold it into one key and the CDN serves variant A's page to the B cohort - which is exactly the misrouted-experiment tickets we just got."
+    },
+    {
+      "role": "assistant",
+      "text": "Got it - utm_content is load-bearing, everything else utm_ goes, plus those three click IDs and nothing more. Separate thing I noticed while in keys.py: we have zero visibility into what the normalizer actually drops. Want a log line per dropped param so we can audit the campaign traffic?"
+    },
+    {
+      "role": "user",
+      "text": "Not a log line - at edge volumes per-request logging would drown the collector; a counter tagged by param name is plenty, and only for the dropped ones. Also, unrelated heads-up: the purge-webhook test in the edgecache suite has been flaky on CI since Tuesday - infra says it's a sandbox timeout, not your problem - so rerun before you blame your change."
+    },
+    {
+      "role": "assistant",
+      "text": "Counter it is. Next question on the sort: plain lexicographic sort by param name, but what about a repeated name, like tag=b&tag=a - sort the values too so the key is maximally canonical?"
+    },
+    {
+      "role": "user",
+      "text": "No - sort by NAME only and keep it stable: within a repeated name the original value order is preserved. Some origin endpoints treat repeated-param order as meaningful, so tag=b&tag=a and tag=a&tag=b are legitimately different requests. Sort names, preserve value order, re-encode the result canonically - that's the whole sorting rule."
+    },
+    {
+      "role": "assistant",
+      "text": "Stable sort by name, re-encoded. What about params with an empty value - ref= or utm_content= with nothing after the equals? Keep them sorted in place, or normalize the value somehow?"
+    },
+    {
+      "role": "user",
+      "text": "Drop them entirely - an empty-valued param never reaches the origin's handler logic, it just fragments the cache. And yes, that rule wins even for utm_content: utm_content= with an empty value is dropped like anything else. Only a non-empty utm_content is part of the key."
+    },
+    {
+      "role": "assistant",
+      "text": "Empty means gone, carve-out or not. Now the normalization half - I proposed lowercasing the whole URL and stripping trailing slashes. Confirm that part and I'll start on the tests?"
+    },
+    {
+      "role": "user",
+      "text": "That part is off the table. Scheme and host lowercase, yes - DNS is case-insensitive and mixed-case hosts from the app router were splitting the cache. But the path is untouchable: the origin is case-sensitive object storage, /API/Docs and /api/docs are different objects, and we've had a live incident where slash-stripping made /reports/ - a directory index - collide with /reports the file. Path case preserved, trailing slash preserved, exactly as given."
+    },
+    {
+      "role": "assistant",
+      "text": "Surgical then: lowercase stops at the authority, the path is byte-preserved. Different topic - rollout. Changing the key function invalidates effectively the whole edge cache at deploy; do we need a warm-up plan or do we just eat the origin spike?"
+    },
+    {
+      "role": "user",
+      "text": "Staged: ship computing the new key alongside the old one for a day, compare hit-rates in shadow, then cut over region by region overnight - traffic troughs absorb the cold cache. That's ops' standard playbook, nothing for the code to do differently. One more edge while you're in there: what does your parse do with a fragment, like #section?"
+    },
+    {
+      "role": "assistant",
+      "text": "Fragments never leave the browser, so urlsplit already excludes them from the key path and query - the key is scheme://host + path + the re-encoded query. Speaking of which: when every param is dropped, do you want a bare trailing '?' kept in the key or removed?"
+    },
+    {
+      "role": "user",
+      "text": "Removed - if nothing survives the filter, the key is just scheme://host plus the path, no dangling question mark. A URL with only tracking params and the same URL with no query must land on the same cached object; that equivalence is half the hit-rate win."
+    },
+    {
+      "role": "assistant",
+      "text": "Understood - and with the raw-string key gone the dashboard's 'unique objects' count finally becomes honest too. Recap of cache_key(url): parse, then filter - drop every utm_ param EXCEPT utm_content (kept per the marketing-eng agreement, it routes the A/B experience), drop exactly gclid, fbclid, msclkid, and drop any param with an empty value (that rule wins even for utm_content). Sort the survivors by name with a STABLE sort - repeated-name value order preserved - and re-encode canonically. Lowercase scheme and host only; the path keeps its case and its trailing slash exactly as given (case-sensitive origin, /dir/ vs /dir are different resources). No query survivors means no '?' in the key."
+    }
+  ],
+  "function": "cache_key",
+  "policy": "query params are sorted by name (stable - the value order of a repeated name is preserved) and re-encoded canonically; tracking params are dropped: any param starting utm_ plus exactly {gclid, fbclid, msclkid} - EXCEPT utm_content, which is KEPT (it routes the A/B feature experience, per the marketing-eng agreement); params with an empty value are dropped entirely (that rule wins even for utm_content); scheme and host are lowercased while the path keeps its case AND its trailing slash exactly as given (case-sensitive origin object storage; /dir/ vs /dir are different resources)",
+  "non_guessable": "query params are sorted by name (stable - the value order of a repeated name is preserved) and re-encoded canonically; tracking params are dropped: any param starting utm_ plus exactly {gclid, fbclid, msclkid} - EXCEPT utm_content, which is KEPT (it routes the A/B feature experience, per the marketing-eng agreement); params with an empty value are dropped entirely (that rule wins even for utm_content); scheme and host are lowercased while the path keeps its case AND its trailing slash exactly as given (case-sensitive origin object storage; /dir/ vs /dir are different resources)",
+  "host": "boltons@979fa9b"
+}

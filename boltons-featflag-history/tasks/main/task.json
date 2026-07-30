@@ -1,0 +1,26 @@
+{
+  "task_id": "boltons-featflag-history-001",
+  "codebase": "boltons-featflag-history",
+  "build": "build.py",
+  "source": "history",
+  "tier": "planted",
+  "category": "invariant",
+  "module": "flagcore/bucket.py",
+  "policy": "the bucketing hash input is user_id + \":\" + flag_name - per-flag independence with the colon separator pinned byte-for-byte (analytics recomputes the same crc32; decided after the cross-flag correlation incident where users landed in every experiment at once); hash = crc32 of the utf-8 bytes, bucket = crc % 100; a user is IN when bucket < percent (strictly: percent=0 enrolls nobody, percent=100 enrolls everybody); user ids ending @corp.example are ALWAYS in but ONLY when the flag name starts with beta- (the internal-beta convention) - for every other flag corp users bucket normally",
+  "bug_report": "Support says the same accounts get every experimental feature at once - a user enrolled in one experiment is somehow enrolled in all of them. An internal dashboard flag was visible to a real customer, and the rollout percentages we configure never match the enrolled counts analytics reports. A failing repro is at tests/test_regression.py. Fix bucket so rollout membership behaves as configured, without breaking existing behaviour.",
+  "cause_subject": "perf: simplify bucket",
+  "fail_to_pass": [
+    "tests/test_regression.py"
+  ],
+  "pass_to_pass": [
+    "tests/test_featflag.py"
+  ],
+  "hidden_to_pass": [
+    "tests/test_hidden.py"
+  ],
+  "regression_test_file": "regression_test.py",
+  "hidden_test_file": "hidden_test.py",
+  "non_guessable": "decision lives in git history (a documented commit), broken by a misleading 'perf' regression commit; git log/blame is the shortcut",
+  "function": "bucket",
+  "host": "boltons@979fa9b"
+}

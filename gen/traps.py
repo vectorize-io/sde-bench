@@ -344,6 +344,7 @@ from traps_hard_d import TRAPS_HARD_D as _HARD_D
 from traps_hard_e import TRAPS_HARD_E as _HARD_E
 from traps_hard_f import TRAPS_HARD_F as _HARD_F
 from traps_hard_g import TRAPS_HARD_G as _HARD_G
+from traps_hard_i import TRAPS_HARD_I as _HARD_I
 TRAPS.update(_HARD_A)
 TRAPS.update(_HARD_B)
 TRAPS.update(_HARD_C)
@@ -351,3 +352,4 @@ TRAPS.update(_HARD_D)
 TRAPS.update(_HARD_E)
 TRAPS.update(_HARD_F)
 TRAPS.update(_HARD_G)
+TRAPS.update(_HARD_I)

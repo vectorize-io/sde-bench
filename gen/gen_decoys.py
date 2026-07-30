@@ -27,7 +27,7 @@ TASK_MODULES = {"strutils.py", "dictutils.py", "rounding.py", "retry.py", "disco
                 "merge.py", "dedupe.py", "latency.py", "picker.py", "redact.py", "policy.py",
                 "writer.py", "uptime.py", "units.py", "transitions.py", "waves.py",
                 "tags.py", "ledger.py", "overage.py", "drain.py",
-                "allowlist.py", "mime.py"}
+                "allowlist.py", "mime.py", "keys.py", "bucket.py"}
 
 PROMPT = """You are writing a REALISTIC internal developer conversation for a code-history corpus. It is
 about the `{file}` area of the `boltons` Python utility library, grounded in these real commits:

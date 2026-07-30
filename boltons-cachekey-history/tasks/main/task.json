@@ -1,0 +1,26 @@
+{
+  "task_id": "boltons-cachekey-history-001",
+  "codebase": "boltons-cachekey-history",
+  "build": "build.py",
+  "source": "history",
+  "tier": "planted",
+  "category": "filter-rule",
+  "module": "edgecache/keys.py",
+  "policy": "query params are sorted by name (stable - the value order of a repeated name is preserved) and re-encoded canonically; tracking params are dropped: any param starting utm_ plus exactly {gclid, fbclid, msclkid} - EXCEPT utm_content, which is KEPT (it routes the A/B feature experience, per the marketing-eng agreement); params with an empty value are dropped entirely (that rule wins even for utm_content); scheme and host are lowercased while the path keeps its case AND its trailing slash exactly as given (case-sensitive origin object storage; /dir/ vs /dir are different resources)",
+  "bug_report": "Since the ad campaign launched, the edge cache hit-rate has cratered and the CDN bill nearly doubled - origin egress is spiking on pages that should be cached. Separately, two customers report seeing someone else's experiment variant on pages our analytics says belong to the other cohort. A failing repro is at tests/test_regression.py. Fix cache_key so equivalent requests share a cache entry, without breaking existing behaviour.",
+  "cause_subject": "perf: simplify keys",
+  "fail_to_pass": [
+    "tests/test_regression.py"
+  ],
+  "pass_to_pass": [
+    "tests/test_cachekey.py"
+  ],
+  "hidden_to_pass": [
+    "tests/test_hidden.py"
+  ],
+  "regression_test_file": "regression_test.py",
+  "hidden_test_file": "hidden_test.py",
+  "non_guessable": "decision lives in git history (a documented commit), broken by a misleading 'perf' regression commit; git log/blame is the shortcut",
+  "function": "cache_key",
+  "host": "boltons@979fa9b"
+}
