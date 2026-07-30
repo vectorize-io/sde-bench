@@ -1,20 +1,20 @@
 {
   "dataset": "sde-bench",
   "host": "boltons (github.com/mahmoud/boltons) @ 979fa9b",
-  "n_tasks": 43,
+  "n_tasks": 47,
   "by_source": {
-    "conversation": 19,
+    "conversation": 21,
     "conversation-amended": 4,
-    "history": 20
+    "history": 22
   },
   "by_tier": {
-    "planted": 34,
+    "planted": 38,
     "real-function": 9
   },
   "by_category": {
-    "collection-merge": 5,
+    "collection-merge": 7,
     "filter-rule": 7,
-    "invariant": 5,
+    "invariant": 7,
     "mapping": 7,
     "numeric-policy": 6,
     "ordering": 6,
@@ -92,7 +92,7 @@
       "tier": "planted",
       "category": "ordering",
       "function": "plan_waves",
-      "policy": ""
+      "policy": "waves by dependency depth; within a wave tier asc then name; canary services always wave 0 (deps assumed already live)"
     },
     {
       "task_id": "boltons-deploywave-001",
@@ -263,6 +263,22 @@
       "policy": "priority desc; tie -> shorter est_runtime; same tenant never back-to-back"
     },
     {
+      "task_id": "boltons-seqledger-history-001",
+      "source": "history",
+      "tier": "planted",
+      "category": "invariant",
+      "function": "append_event",
+      "policy": "per-tenant seq exactly last+1 (empty trail = 0, gaps raise SequenceGapError); compaction events must advance by EXACTLY +100 (archiver batch size), any other jump rejected; duplicate seq is a no-op (False) only on matching payload_hash, mismatch raises SequenceConflictError"
+    },
+    {
+      "task_id": "boltons-seqledger-001",
+      "source": "conversation",
+      "tier": "planted",
+      "category": "invariant",
+      "function": "append_event",
+      "policy": "per-tenant seq exactly last+1 (empty trail = 0, gaps raise SequenceGapError); compaction events must advance by EXACTLY +100 (archiver batch size), any other jump rejected; duplicate seq is a no-op (False) only on matching payload_hash, mismatch raises SequenceConflictError"
+    },
+    {
       "task_id": "boltons-slalog-amended-001",
       "source": "conversation-amended",
       "tier": "planted",
@@ -276,7 +292,7 @@
       "tier": "planted",
       "category": "filter-rule",
       "function": "downtime_minutes",
-      "policy": ""
+      "policy": "merge overlapping incident windows; ignore merged blips <60s; exclude maintenance ONLY when announced >=24h before start"
     },
     {
       "task_id": "boltons-slalog-001",
@@ -308,7 +324,7 @@
       "tier": "planted",
       "category": "invariant",
       "function": "advance",
-      "policy": ""
+      "policy": "pinned transition map; cancelled ONLY from {pending,on_hold}; refunded ONLY from returned; case-insensitive input, lowercase canonical state"
     },
     {
       "task_id": "boltons-statetrans-001",
@@ -317,6 +333,22 @@
       "category": "invariant",
       "function": "advance",
       "policy": "pinned transition map; cancelled ONLY from {pending,on_hold}; refunded ONLY from returned; case-insensitive input, lowercase canonical state"
+    },
+    {
+      "task_id": "boltons-tagmerge-history-001",
+      "source": "history",
+      "tier": "planted",
+      "category": "collection-merge",
+      "function": "merge_tags",
+      "policy": "precedence-ordered case-insensitive union keeping the first (highest-precedence) casing, first-occurrence order; '-name' tombstones suppress the tag in lower-precedence sources only, never a higher-precedence assert; tombstones never in output, unmatched ones silently ignored"
+    },
+    {
+      "task_id": "boltons-tagmerge-001",
+      "source": "conversation",
+      "tier": "planted",
+      "category": "collection-merge",
+      "function": "merge_tags",
+      "policy": "precedence-ordered case-insensitive union keeping the first (highest-precedence) casing, first-occurrence order; '-name' tombstones suppress the tag in lower-precedence sources only, never a higher-precedence assert; tombstones never in output, unmatched ones silently ignored"
     },
     {
       "task_id": "boltons-trimstats-history-001",
@@ -364,7 +396,7 @@
       "tier": "planted",
       "category": "mapping",
       "function": "parse_quantity",
-      "policy": ""
+      "policy": "memory suffixes binary (bare = MiB); disk suffixes decimal (bare = GB); K rejected for disk"
     },
     {
       "task_id": "boltons-unitparse-001",

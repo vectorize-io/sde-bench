@@ -21,7 +21,11 @@ HOST = Path(os.environ.get("SDEBENCH_BOLTONS_HOST") or (Path.home() / "dev" / "_
 REF = "979fa9b613fa8c0a455ae16ea6f2ec91c11ecafe"
 
 # never let a decoy leak a planted task's answer vocabulary — steer generation away from these modules.
-TASK_MODULES = {"strutils.py", "dictutils.py", "rounding.py", "retry.py", "discount.py", "flags.py", "merge.py"}
+# Keep in sync with the trap files (traps.py + traps_hard_*.py): every planted module basename plus
+# the real-function host modules.
+TASK_MODULES = {"strutils.py", "dictutils.py", "rounding.py", "retry.py", "discount.py", "flags.py",
+                "merge.py", "dedupe.py", "latency.py", "picker.py", "redact.py", "policy.py",
+                "writer.py", "uptime.py", "units.py", "transitions.py", "waves.py"}
 
 PROMPT = """You are writing a REALISTIC internal developer conversation for a code-history corpus. It is
 about the `{file}` area of the `boltons` Python utility library, grounded in these real commits:
