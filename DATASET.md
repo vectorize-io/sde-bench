@@ -65,7 +65,7 @@ used as a fixture (cloned, not vendored). Its **~1500 real commit subjects + rat
 the memory store as retrieval noise, plus decoy chats — so surfacing the right decision is a real
 ranking problem, not a lookup.
 
-## Tasks (57)
+## Tasks (61)
 
 | task | source | tier | category | module/fn | non-guessable policy |
 |---|---|---|---|---|---|
@@ -94,6 +94,8 @@ ranking problem, not a lookup.
 | drainplan | conversation | planted | ordering | `workerctl/drain.py` | running finish first (remaining asc); idempotent-in-window queued jobs run now; expired queued jobs dropped; rest requeue in original order |
 | hostallow | conversation | planted | set-membership | `egressgate/allowlist.py` | exact entries case-insensitive; `*.d` wildcard matches EXACTLY one label (never bare/deeper); IPs exact-only; trailing dot stripped |
 | mimemap | conversation | planted | mapping | `assetserve/mime.py` | pinned table: csv->text/csv, yml+yaml->x-yaml, svg needs charset=utf-8, js->text/javascript; unknown/dotfiles->octet-stream, .config.yaml by real ext |
+| cachekey | conversation | planted | filter-rule | `edgecache/keys.py` | sort+re-encode params; drop utm_* EXCEPT utm_content + {gclid,fbclid,msclkid}; empty values dropped; path case/slash preserved |
+| featflag | conversation | planted | invariant | `flagcore/bucket.py` | crc32(user_id+":"+flag)%100 < percent; corp users always-in ONLY for beta- flags |
 | dedupe-amended | conversation-amended | planted | collection-merge | `crmsync/dedupe.py` | the amended conflict rule (chat A's keep-latest is a proven naive) |
 | retryjitter-amended | conversation-amended | planted | set-membership | `httpretry/policy.py` | the amended rule (adds 408, cap 60->30s); chat A's rule passes repro, fails hidden |
 | slalog-amended | conversation-amended | planted | filter-rule | `slalog/uptime.py` | the amended maintenance rule (subtract-all -> 24h-notice only); chat A's rule is a proven naive |
@@ -125,6 +127,8 @@ ranking problem, not a lookup.
 | drainplan-history | history | planted | ordering | `workerctl/drain.py` | running finish first; idempotent-in-window run now; expired dropped; rest original order |
 | hostallow-history | history | planted | set-membership | `egressgate/allowlist.py` | single-label wildcards; IPs exact-only; trailing dot stripped |
 | mimemap-history | history | planted | mapping | `assetserve/mime.py` | pinned MIME table incl. svg charset suffix; dotfile carve-out |
+| cachekey-history | history | planted | filter-rule | `edgecache/keys.py` | tracking-param drop set with utm_content carve-out; canonical form pinned |
+| featflag-history | history | planted | invariant | `flagcore/bucket.py` | per-flag colon-separated hash input; strict < boundary; corp-beta rule |
 | seqledger-history | history | planted | invariant | `auditlog/ledger.py` | per-tenant seq exactly last+1; compaction advances EXACTLY +100; duplicate no-op only on matching payload_hash |
 
 Per-task metadata is in each `task.json` (`source`, `tier`, `category`, `module`, `function`,

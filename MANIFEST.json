@@ -1,20 +1,20 @@
 {
   "dataset": "sde-bench",
   "host": "boltons (github.com/mahmoud/boltons) @ 979fa9b",
-  "n_tasks": 57,
+  "n_tasks": 61,
   "by_source": {
-    "conversation": 25,
+    "conversation": 27,
     "conversation-amended": 6,
-    "history": 26
+    "history": 28
   },
   "by_tier": {
-    "planted": 48,
+    "planted": 52,
     "real-function": 9
   },
   "by_category": {
     "collection-merge": 8,
-    "filter-rule": 7,
-    "invariant": 7,
+    "filter-rule": 9,
+    "invariant": 9,
     "mapping": 9,
     "numeric-policy": 9,
     "ordering": 8,
@@ -45,6 +45,22 @@
       "category": "numeric-policy",
       "function": "MAX_ATTEMPTS",
       "policy": "exactly 7 (measured to the rate-limit window)"
+    },
+    {
+      "task_id": "boltons-cachekey-history-001",
+      "source": "history",
+      "tier": "planted",
+      "category": "filter-rule",
+      "function": "cache_key",
+      "policy": "query params are sorted by name (stable - the value order of a repeated name is preserved) and re-encoded canonically; tracking params are dropped: any param starting utm_ plus exactly {gclid, fbclid, msclkid} - EXCEPT utm_content, which is KEPT (it routes the A/B feature experience, per the marketing-eng agreement); params with an empty value are dropped entirely (that rule wins even for utm_content); scheme and host are lowercased while the path keeps its case AND its trailing slash exactly as given (case-sensitive origin object storage; /dir/ vs /dir are different resources)"
+    },
+    {
+      "task_id": "boltons-cachekey-001",
+      "source": "conversation",
+      "tier": "planted",
+      "category": "filter-rule",
+      "function": "cache_key",
+      "policy": "query params are sorted by name (stable - the value order of a repeated name is preserved) and re-encoded canonically; tracking params are dropped: any param starting utm_ plus exactly {gclid, fbclid, msclkid} - EXCEPT utm_content, which is KEPT (it routes the A/B feature experience, per the marketing-eng agreement); params with an empty value are dropped entirely (that rule wins even for utm_content); scheme and host are lowercased while the path keeps its case AND its trailing slash exactly as given (case-sensitive origin object storage; /dir/ vs /dir are different resources)"
     },
     {
       "task_id": "boltons-csvquote-history-001",
@@ -133,6 +149,22 @@
       "category": "ordering",
       "function": "drain_order",
       "policy": "in-flight (running) jobs always finish and lead run_now ordered by remaining estimate ascending (ties by id); queued jobs requeue in ORIGINAL queue order, except idempotent jobs whose deadline is inside the inclusive drain window (now <= deadline <= now + window) run now after the in-flight jobs, ordered by deadline then id; queued jobs with deadline < now are dropped entirely (even idempotent ones) and recorded in the third returned list, original order"
+    },
+    {
+      "task_id": "boltons-featflag-history-001",
+      "source": "history",
+      "tier": "planted",
+      "category": "invariant",
+      "function": "bucket",
+      "policy": "the bucketing hash input is user_id + \":\" + flag_name - per-flag independence with the colon separator pinned byte-for-byte (analytics recomputes the same crc32; decided after the cross-flag correlation incident where users landed in every experiment at once); hash = crc32 of the utf-8 bytes, bucket = crc % 100; a user is IN when bucket < percent (strictly: percent=0 enrolls nobody, percent=100 enrolls everybody); user ids ending @corp.example are ALWAYS in but ONLY when the flag name starts with beta- (the internal-beta convention) - for every other flag corp users bucket normally"
+    },
+    {
+      "task_id": "boltons-featflag-001",
+      "source": "conversation",
+      "tier": "planted",
+      "category": "invariant",
+      "function": "bucket",
+      "policy": "the bucketing hash input is user_id + \":\" + flag_name - per-flag independence with the colon separator pinned byte-for-byte (analytics recomputes the same crc32; decided after the cross-flag correlation incident where users landed in every experiment at once); hash = crc32 of the utf-8 bytes, bucket = crc % 100; a user is IN when bucket < percent (strictly: percent=0 enrolls nobody, percent=100 enrolls everybody); user ids ending @corp.example are ALWAYS in but ONLY when the flag name starts with beta- (the internal-beta convention) - for every other flag corp users bucket normally"
     },
     {
       "task_id": "boltons-findhashtags-history-001",
