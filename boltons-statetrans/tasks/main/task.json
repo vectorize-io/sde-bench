@@ -1,0 +1,55 @@
+{
+  "task_id": "boltons-statetrans-001",
+  "codebase": "boltons-statetrans",
+  "build": "build.py",
+  "source": "conversation",
+  "tier": "planted",
+  "category": "invariant",
+  "module": "orderflow/transitions.py",
+  "bug_report": "Finance reconciliation found orders that were both charged and cancelled on the same day, and one order was refunded twice. Support separately reports orders that look stuck - they can't move them out of their current status at all. A failing repro is at tests/test_regression.py. Fix advance so orders stop landing in impossible statuses, without breaking existing behaviour.",
+  "fail_to_pass": [
+    "tests/test_regression.py"
+  ],
+  "pass_to_pass": [
+    "tests/test_statetrans.py"
+  ],
+  "hidden_to_pass": [
+    "tests/test_hidden.py"
+  ],
+  "regression_test_file": "regression_test.py",
+  "hidden_test_file": "hidden_test.py",
+  "conversations": [
+    {
+      "role": "user",
+      "text": "Finance flagged a reconciliation mess: two orders yesterday were charged and cancelled on the same day, and one of them ended up refunded twice. Meanwhile support says some orders just get stuck and they can't move them at all."
+    },
+    {
+      "role": "assistant",
+      "text": "advance() currently allows any forward-looking move, so a paid order can jump straight to cancelled. I'll block that one edge: once an order is paid, cancel is off the table."
+    },
+    {
+      "role": "user",
+      "text": "Blocking paid->cancelled is right, but it's not one edge - we pinned the whole lifecycle after the double-refund incident. From pending you can go to paid, on_hold, or cancelled. From paid, only to shipped or on_hold - a charged order has to be put on_hold first and cancelled from there, so the charge settles before anyone cancels."
+    },
+    {
+      "role": "assistant",
+      "text": "Got it. What about the back half of the lifecycle - shipped, returned, refunded?"
+    },
+    {
+      "role": "user",
+      "text": "shipped can only go to returned, and returned only to refunded. Refunded is reachable ONLY from returned - never straight from paid or shipped; that shortcut is exactly how the double refund happened. And cancelled and refunded are terminal, nothing ever moves out of them."
+    },
+    {
+      "role": "assistant",
+      "text": "Understood. And on_hold - does it go back to paid once the hold clears?"
+    },
+    {
+      "role": "user",
+      "text": "No - on_hold releases back to pending, or goes to cancelled. That's the stuck-order complaint, by the way: support parks an order on hold and then can't release it. One more thing: the OMS sends states like 'Paid' and 'SHIPPED' - compare case-insensitively, but whatever you store must be the lowercase canonical form."
+    },
+    {
+      "role": "assistant",
+      "text": "Final map: pending -> paid/on_hold/cancelled; paid -> shipped/on_hold only, never straight to cancelled; on_hold -> pending/cancelled; shipped -> returned; returned -> refunded, the only way into refunded; cancelled and refunded terminal. Inputs match case-insensitively and the stored state is always lowercase."
+    }
+  ]
+}

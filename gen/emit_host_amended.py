@@ -57,6 +57,53 @@ AMENDED = {
             ],
         ],
     },
+    "slalog": {
+        "function": "downtime_minutes",
+        "policy": ("merge overlapping incident windows; ignore merged blips <60s; exclude maintenance "
+                   "ONLY when announced >=24h before start (post-amendment)"),
+        "non_guessable": ("the AMENDED maintenance rule (all-maintenance-excluded -> 24h-notice only); "
+                          "the chat-A rule passes the repro but fails hidden"),
+        "chats": [
+            [
+                {"role": "user", "text": "The uptime report double-counts a bad night: three alerts for what was one outage, plus a few one-ping blips that shouldn't count at all."},
+                {"role": "assistant", "text": "Two fixes then: merge overlapping or touching incident windows into one outage before summing, and drop anything under a minute — sub-60-second blips are monitoring noise, not downtime."},
+                {"role": "user", "text": "Right, and measure that minute on the merged window, not the raw alerts — three 30-second alerts back to back are one 90-second outage, not three ignorable blips."},
+                {"role": "assistant", "text": "Agreed. And maintenance windows we schedule stay excluded from downtime as they are today?"},
+                {"role": "user", "text": "Yes, planned maintenance never counts against the SLA — subtract any overlap with a maintenance window."},
+                {"role": "assistant", "text": "Settled: merge overlapping/touching incident windows, ignore merged outages under 60 seconds, and subtract every maintenance overlap from what remains."},
+            ],
+            [
+                {"role": "user", "text": "Amendment after the Q2 audit: legal flagged that ops has been declaring 'emergency maintenance' DURING incidents and the tool then writes the outage off. The auditors' rule is that maintenance only shields the SLA when customers had real notice."},
+                {"role": "assistant", "text": "So the maintenance exclusion needs a notice condition. Where's the line?"},
+                {"role": "user", "text": "Twenty-four hours. A maintenance window only excludes downtime if its announced_at timestamp is at least 24 hours before the window starts. Short-notice maintenance counts as ordinary downtime."},
+                {"role": "assistant", "text": "Amending the rule, superseding the old subtract-all-maintenance behaviour: merging and the 60-second blip floor stay as decided; maintenance overlap is excluded ONLY when announced at least 24h before start — short-notice windows count against the SLA."},
+                {"role": "user", "text": "That's the rule the report has to implement going forward."},
+            ],
+        ],
+    },
+    "unitparse": {
+        "function": "parse_quantity",
+        "policy": ("memory suffixes binary (bare = MiB); disk suffixes decimal (bare = GB); "
+                   "K rejected for disk (post-amendment)"),
+        "non_guessable": ("the AMENDED disk semantics (uniform-binary -> decimal for disk, bare GB, "
+                          "K invalid); the chat-A rule passes the repro but fails hidden"),
+        "chats": [
+            [
+                {"role": "user", "text": "Config migration broke sizing: '512' in the old files meant half a gig of RAM and the new parser reads it as 512 bytes, so pods get OOM-killed on start."},
+                {"role": "assistant", "text": "Then bare numbers need a sane default unit, and the suffixes should be the Kubernetes-style powers of two. I'd make every suffix binary — K is 1024, M is 1024², G is 1024³ — for memory and disk alike."},
+                {"role": "user", "text": "One uniform table for both kinds, yes — nobody will remember two systems. And a bare number is mebibytes, whatever the kind."},
+                {"role": "assistant", "text": "Settled: parse_quantity uses binary multipliers for every suffix on both memory and disk, case-insensitive, and a bare number always means MiB."},
+            ],
+            [
+                {"role": "user", "text": "Amendment to the units decision: finance reconciled the storage bill and our provisioner is over-allocating disks — the storage vendor sells decimal gigabytes, not binary."},
+                {"role": "assistant", "text": "So disk splits off from memory: disk suffixes become decimal — M is 1000², G is 1000³, T is 1000⁴ — while memory stays binary as decided?"},
+                {"role": "user", "text": "Exactly. Bare disk numbers mean decimal gigabytes now, since that's the vendor's billing unit. Memory keeps binary suffixes and the bare-MiB default."},
+                {"role": "assistant", "text": "And kilobytes on disk? The vendor API has no such unit."},
+                {"role": "user", "text": "Reject it — a K suffix on a disk quantity is a config error, raise instead of guessing. K stays valid for memory."},
+                {"role": "assistant", "text": "Amended rule, superseding uniform-binary: memory = binary suffixes, bare MiB; disk = decimal suffixes, bare GB, K invalid (ValueError). That's the split going forward."},
+            ],
+        ],
+    },
 }
 
 

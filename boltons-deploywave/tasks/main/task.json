@@ -1,0 +1,55 @@
+{
+  "task_id": "boltons-deploywave-001",
+  "codebase": "boltons-deploywave",
+  "build": "build.py",
+  "source": "conversation",
+  "tier": "planted",
+  "category": "ordering",
+  "module": "shipctl/waves.py",
+  "bug_report": "The rollout order for yesterday's release looked random - a dependent service went out before the thing it reads from, and the checkout blip during release is back. A failing repro is at tests/test_regression.py. Fix plan_waves so a service never rolls out ahead of what it depends on, without breaking existing behaviour.",
+  "fail_to_pass": [
+    "tests/test_regression.py"
+  ],
+  "pass_to_pass": [
+    "tests/test_deploywave.py"
+  ],
+  "hidden_to_pass": [
+    "tests/test_hidden.py"
+  ],
+  "regression_test_file": "regression_test.py",
+  "hidden_test_file": "hidden_test.py",
+  "conversations": [
+    {
+      "role": "user",
+      "text": "Yesterday's release order looked random again - the checkout blip is back, and a service went out before the thing it reads from had even started rolling."
+    },
+    {
+      "role": "assistant",
+      "text": "plan_waves just returns everything as one alphabetical batch. I'll switch it to topological waves: a service deploys in the wave after its dependencies, alphabetical within a wave."
+    },
+    {
+      "role": "user",
+      "text": "Leveling by dependency depth is right - and make it the DEEPEST dependency, a service waits for the last of its deps. But alphabetical inside a wave isn't enough. Every service has a tier field, 0 being the most critical - inside a wave the most critical go first, so tier ascending, and fall back to name A-Z only when tiers tie, so the plan stays deterministic."
+    },
+    {
+      "role": "assistant",
+      "text": "Understood - depth leveling across waves, tier then name within a wave. Anything else the planner needs to handle?"
+    },
+    {
+      "role": "user",
+      "text": "Yes, canaries. Any service marked canary: true doesn't participate in the leveling at all - they form their own wave at the very front, before everything else, whatever their dependencies say."
+    },
+    {
+      "role": "assistant",
+      "text": "Even when a canary depends on a service that deploys in a later wave? That inverts the dependency order for it."
+    },
+    {
+      "role": "user",
+      "text": "That's deliberate - ops decision. The canaries exist to validate the release before anything else rolls, and their dependencies are assumed already live from the previous release. Sort the canary wave by name. And when there are no canaries there's no empty wave at the front - the first leveled wave just goes first."
+    },
+    {
+      "role": "assistant",
+      "text": "Final plan: canaries (if any) form wave 0 ordered by name; every other service lands in the wave after its deepest dependency; within a wave, tier ascending - 0 first - then name A-Z."
+    }
+  ]
+}

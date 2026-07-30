@@ -26,6 +26,9 @@ CATEGORY = {
     # hard tier batch C (see traps_hard_c.py)
     "slalog": "filter-rule",        # window merge + sub-minute blip carve-out + maintenance notice gate
     "unitparse": "mapping",         # suffix -> bytes mapping that depends on the resource kind
+    # hard tier batch D (see traps_hard_d.py)
+    "statetrans": "invariant",      # lifecycle transition map + lowercase canonical state
+    "deploywave": "ordering",       # dependency leveling + tier-within-wave + canary wave 0
 }
 
 CATEGORIES = sorted(set(CATEGORY.values()))

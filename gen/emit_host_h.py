@@ -41,7 +41,7 @@ H_MSG = {
         "exactly {'true','on'}; do not widen it."),
 }
 for _n in ("dedupe", "trimstats", "sched", "redact", "retryjitter", "csvquote",
-           "slalog", "unitparse"):
+           "slalog", "unitparse", "statetrans", "deploywave"):
     H_MSG[_n] = (TRAPS[_n]["decision_subject"], TRAPS[_n]["decision_rationale"])
 TASKS = list(H_MSG)
 
