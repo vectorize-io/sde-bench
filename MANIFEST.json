@@ -1,14 +1,14 @@
 {
   "dataset": "sde-bench",
   "host": "boltons (github.com/mahmoud/boltons) @ 979fa9b",
-  "n_tasks": 47,
+  "n_tasks": 51,
   "by_source": {
-    "conversation": 21,
+    "conversation": 23,
     "conversation-amended": 4,
-    "history": 22
+    "history": 24
   },
   "by_tier": {
-    "planted": 38,
+    "planted": 42,
     "real-function": 9
   },
   "by_category": {
@@ -16,8 +16,8 @@
     "filter-rule": 7,
     "invariant": 7,
     "mapping": 7,
-    "numeric-policy": 6,
-    "ordering": 6,
+    "numeric-policy": 8,
+    "ordering": 8,
     "set-membership": 7
   },
   "categories": [
@@ -119,6 +119,22 @@
       "policy": "percent discounts apply before fixed-amount"
     },
     {
+      "task_id": "boltons-drainplan-history-001",
+      "source": "history",
+      "tier": "planted",
+      "category": "ordering",
+      "function": "drain_order",
+      "policy": "in-flight (running) jobs always finish and lead run_now ordered by remaining estimate ascending (ties by id); queued jobs requeue in ORIGINAL queue order, except idempotent jobs whose deadline is inside the inclusive drain window (now <= deadline <= now + window) run now after the in-flight jobs, ordered by deadline then id; queued jobs with deadline < now are dropped entirely (even idempotent ones) and recorded in the third returned list, original order"
+    },
+    {
+      "task_id": "boltons-drainplan-001",
+      "source": "conversation",
+      "tier": "planted",
+      "category": "ordering",
+      "function": "drain_order",
+      "policy": "in-flight (running) jobs always finish and lead run_now ordered by remaining estimate ascending (ties by id); queued jobs requeue in ORIGINAL queue order, except idempotent jobs whose deadline is inside the inclusive drain window (now <= deadline <= now + window) run now after the in-flight jobs, ordered by deadline then id; queued jobs with deadline < now are dropped entirely (even idempotent ones) and recorded in the third returned list, original order"
+    },
+    {
       "task_id": "boltons-findhashtags-history-001",
       "source": "history",
       "tier": "real-function",
@@ -157,6 +173,22 @@
       "category": "invariant",
       "function": "OrderedMultiDict.__setitem__",
       "policy": "__setitem__ must reset the underlying value list to [v] after _remove_all (not reuse add(), which appends to the stale list)"
+    },
+    {
+      "task_id": "boltons-overage-history-001",
+      "source": "history",
+      "tier": "planted",
+      "category": "numeric-policy",
+      "function": "overage_charge",
+      "policy": "included quota prorates by calendar day (quota * day_of_month / days_in_month, rounded UP to the next whole unit); first 25 overage units per month are a free grace allowance applied BEFORE block rounding; the remainder bills in 50-unit blocks rounded UP (partial block = full block) at plan['block_fee'] per block, never per unit"
+    },
+    {
+      "task_id": "boltons-overage-001",
+      "source": "conversation",
+      "tier": "planted",
+      "category": "numeric-policy",
+      "function": "overage_charge",
+      "policy": "included quota prorates by calendar day (quota * day_of_month / days_in_month, rounded UP to the next whole unit); first 25 overage units per month are a free grace allowance applied BEFORE block rounding; the remainder bills in 50-unit blocks rounded UP (partial block = full block) at plan['block_fee'] per block, never per unit"
     },
     {
       "task_id": "boltons-parseflag-history-001",
