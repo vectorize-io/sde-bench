@@ -20,7 +20,9 @@ conversations**.
 This repo is the **dataset** (tasks + generator + datasheet). The runner, agents, grading, and
 memory systems under test live in
 [agent-memory-benchmark](https://github.com/vectorize-io/agent-memory-benchmark), which mounts this
-repo as a git submodule at `sdebench/datasets`.
+repo as a git submodule at `sdebench/datasets`. A flat, `load_dataset()`-able mirror is published
+on Hugging Face: **[vectorize-io/sde-bench](https://huggingface.co/datasets/vectorize-io/sde-bench)**
+(regenerated from here via `gen/export_hf.py` — this repo stays canonical).
 
 ## Anatomy of a task
 
