@@ -10,7 +10,7 @@ project's git history, or from a past developer conversation. Where the decision
 benchmark's independent variable; whether a memory system reliably surfaces it is what gets
 measured.
 
-All tasks are hosted inside the real [boltons](https://github.com/mahmoud/boltons) library
+All tasks are hosted inside the real [boltons](https://github.com/vectorize-io/boltons) library
 (~1,600 commits, pinned at `979fa9b`, BSD, used unmodified as a fixture; clone from the
 [vectorize-io/boltons](https://github.com/vectorize-io/boltons) fork, kept so the fixture can
 never disappear from under the benchmark) — so agents navigate a

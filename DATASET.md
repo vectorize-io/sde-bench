@@ -60,7 +60,7 @@ per category shows *where* memory helps most.
 
 ## Host & noise
 
-[boltons](https://github.com/mahmoud/boltons) (BSD, ~1600 commits, pinned at `979fa9b`) is the host,
+[boltons](https://github.com/vectorize-io/boltons) (BSD, ~1600 commits, pinned at `979fa9b`) is the host,
 used as a fixture (cloned, not vendored). Its **~1500 real commit subjects + rationale bodies** seed
 the memory store as retrieval noise, plus decoy chats — so surfacing the right decision is a real
 ranking problem, not a lookup.
