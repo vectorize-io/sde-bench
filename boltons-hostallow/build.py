@@ -3,7 +3,11 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "gen"))
 from traps import TRAPS
 
-HOST = Path(os.environ.get("SDEBENCH_BOLTONS_HOST") or (Path.home() / "dev" / "_sdebench_hosts" / "boltons"))
+_h = os.environ.get("SDEBENCH_BOLTONS_HOST")
+if not _h:
+    sys.exit("SDEBENCH_BOLTONS_HOST is required: git clone https://github.com/vectorize-io/boltons "
+             "and point SDEBENCH_BOLTONS_HOST at the clone")
+HOST = Path(_h)
 REF = '979fa9b613fa8c0a455ae16ea6f2ec91c11ecafe'
 TRAP = TRAPS['hostallow']
 

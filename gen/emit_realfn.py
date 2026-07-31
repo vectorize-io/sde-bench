@@ -16,7 +16,11 @@ REF = "979fa9b613fa8c0a455ae16ea6f2ec91c11ecafe"
 BUILD = '''import sys, os, shutil, subprocess
 from pathlib import Path
 
-HOST = Path(os.environ.get("SDEBENCH_BOLTONS_HOST") or (Path.home() / "dev" / "_sdebench_hosts" / "boltons"))
+_h = os.environ.get("SDEBENCH_BOLTONS_HOST")
+if not _h:
+    sys.exit("SDEBENCH_BOLTONS_HOST is required: git clone https://github.com/vectorize-io/boltons "
+             "and point SDEBENCH_BOLTONS_HOST at the clone")
+HOST = Path(_h)
 REF = {ref!r}
 KEEP = set({keep!r}) | {{"conftest.py", "__init__.py"}}
 
@@ -58,7 +62,11 @@ def emit(name):
         "regression_test_file": "regression_test.py", "hidden_test_file": "hidden_test.py",
         "conversations": _RF_SESS.get(name) or t["conversation"],
     }
-    (ds / "task.json").write_text(json.dumps(task, indent=2))
+    tj = ds / "task.json"
+    if tj.exists():  # preserve post-emission enrichment keys (function/policy/non_guessable/host, ...)
+        for k, v in json.loads(tj.read_text()).items():
+            task.setdefault(k, v)
+    tj.write_text(json.dumps(task, indent=2) + "\n")
     return cb
 
 

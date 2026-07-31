@@ -154,7 +154,7 @@ leakage) — the agent still writes and tests the fix.
 Empirically the dataset discriminates: the plain agent needs interventions on essentially every task,
 and a memory system that surfaces the right decision drives interventions toward zero. Reproduction and
 per-arm results live in the runner,
-[open-memory-benchmark](https://github.com/vectorize-io/open-memory-benchmark).
+[agent-memory-benchmark](https://github.com/vectorize-io/agent-memory-benchmark).
 
 ## Validate & run
 
@@ -166,7 +166,7 @@ python validate.py            # all boltons-* tasks: fields, tests parse, manife
 
 To actually run the benchmark (build each task's repo, drive an agent, grade in Docker, count
 interventions), use the runner in
-[open-memory-benchmark](https://github.com/vectorize-io/open-memory-benchmark), which mounts this repo
+[agent-memory-benchmark](https://github.com/vectorize-io/agent-memory-benchmark), which mounts this repo
 as a submodule at `sdebench/datasets` and runs e.g.
 `uv run omb run --dataset sdebench --split boltons --mode coding --memory {none|hscoding}`.
 

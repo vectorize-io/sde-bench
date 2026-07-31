@@ -19,7 +19,7 @@ conversations**.
 
 This repo is the **dataset** (tasks + generator + datasheet). The runner, agents, grading, and
 memory systems under test live in
-[open-memory-benchmark](https://github.com/vectorize-io/open-memory-benchmark), which mounts this
+[agent-memory-benchmark](https://github.com/vectorize-io/agent-memory-benchmark), which mounts this
 repo as a git submodule at `sdebench/datasets`.
 
 ## Anatomy of a task
@@ -104,7 +104,7 @@ measured.
 
 ## Running the benchmark
 
-The runner lives in [open-memory-benchmark](https://github.com/vectorize-io/open-memory-benchmark)
+The runner lives in [agent-memory-benchmark](https://github.com/vectorize-io/agent-memory-benchmark)
 (this repo mounted as a submodule). Standard flow:
 
 ```bash
@@ -128,7 +128,8 @@ per-task traces (agent trajectory, patch, injected memory, git history).
 To build one task's repo without the runner:
 
 ```bash
-git clone https://github.com/vectorize-io/boltons ~/dev/_sdebench_hosts/boltons  # or SDEBENCH_BOLTONS_HOST
+git clone https://github.com/vectorize-io/boltons /path/to/boltons
+export SDEBENCH_BOLTONS_HOST=/path/to/boltons   # required by every build.py
 python boltons-slalog/build.py /tmp/slalog-repo   # materializes the codebase at HEAD (bug in place)
 ```
 

@@ -10,14 +10,18 @@ debugging, trade-offs — WITHOUT stating any of the benchmark's planted policie
 generated ONCE into decoy_conversations.json (reused across every task bank), so it's cheap at run time.
 
 Usage: uv run python sdebench/datasets/gen/gen_decoys.py [--n 60] [--out decoy_conversations.json]
-Env: GEMINI_API_KEY. Host clone at ~/dev/_sdebench_hosts/boltons (or SDEBENCH_BOLTONS_HOST).
+Env: GEMINI_API_KEY; SDEBENCH_BOLTONS_HOST (required) -> a clone of github.com/vectorize-io/boltons.
 """
 import argparse, json, os, subprocess, sys
 from collections import defaultdict
 from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
-HOST = Path(os.environ.get("SDEBENCH_BOLTONS_HOST") or (Path.home() / "dev" / "_sdebench_hosts" / "boltons"))
+_h = os.environ.get("SDEBENCH_BOLTONS_HOST")
+if not _h:
+    sys.exit("SDEBENCH_BOLTONS_HOST is required: git clone https://github.com/vectorize-io/boltons "
+             "and point SDEBENCH_BOLTONS_HOST at the clone")
+HOST = Path(_h)
 REF = "979fa9b613fa8c0a455ae16ea6f2ec91c11ecafe"
 
 # never let a decoy leak a planted task's answer vocabulary — steer generation away from these modules.

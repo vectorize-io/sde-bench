@@ -136,17 +136,10 @@ task discriminates. The agent writes its own fix.
 Both tiers build on top of a local clone of boltons, pinned at `979fa9b`:
 
 ```bash
-git clone https://github.com/vectorize-io/boltons ~/dev/_sdebench_hosts/boltons
-# or point elsewhere:
-export SDEBENCH_BOLTONS_HOST=/path/to/boltons
+git clone https://github.com/vectorize-io/boltons /path/to/boltons
+export SDEBENCH_BOLTONS_HOST=/path/to/boltons   # REQUIRED: every build.py and emitter refuses to run without it
 ```
 
 Boltons is used unmodified as a fixture (cloned, not vendored) — its ~1600 real commits are the
 retrieval noise a memory system must rank against.
 
-## Synthetic standalone tasks (optional, not in the published set)
-
-`gen/core.py` + `gen/emit.py` + `gen/validate.py` are an **older, boltons-free** path: they build a tiny
-standalone library repo and plant a trap into its git history (source **`history`**) or only its conversation
-(source **`conversation`**), emitting `gen-<trap>-<source>` dirs. The published dataset is entirely boltons-hosted,
-so these aren't used, but the code is kept for authoring controlled synthetic tasks with full history.

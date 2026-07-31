@@ -37,7 +37,11 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "gen"))
 from realfn_traps import REALFN_TRAPS
 from emit_realfn_h import H_MSG
 
-HOST = Path(os.environ.get("SDEBENCH_BOLTONS_HOST") or (Path.home() / "dev" / "_sdebench_hosts" / "boltons"))
+_h = os.environ.get("SDEBENCH_BOLTONS_HOST")
+if not _h:
+    sys.exit("SDEBENCH_BOLTONS_HOST is required: git clone https://github.com/vectorize-io/boltons "
+             "and point SDEBENCH_BOLTONS_HOST at the clone")
+HOST = Path(_h)
 REF = {ref!r}
 T = REALFN_TRAPS[{trap!r}]
 SUBJ, BODY = H_MSG[{trap!r}]
@@ -99,7 +103,11 @@ def emit(name):
                          "'refactor' regression; HEAD is stock boltons — git log/blame reveals the rule",
         "decision_subject": H_MSG[name][0], "decision_rationale": H_MSG[name][1],
     }
-    (ds / "task.json").write_text(json.dumps(task, indent=2))
+    tj = ds / "task.json"
+    if tj.exists():  # preserve post-emission enrichment keys (function/policy/non_guessable/host, ...)
+        for k, v in json.loads(tj.read_text()).items():
+            task.setdefault(k, v)
+    tj.write_text(json.dumps(task, indent=2) + "\n")
     return cb
 
 
