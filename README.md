@@ -11,7 +11,9 @@ benchmark's independent variable; whether a memory system reliably surfaces it i
 measured.
 
 All tasks are hosted inside the real [boltons](https://github.com/mahmoud/boltons) library
-(~1,600 commits, pinned at `979fa9b`, BSD, used unmodified as a fixture) — so agents navigate a
+(~1,600 commits, pinned at `979fa9b`, BSD, used unmodified as a fixture; clone from the
+[vectorize-io/boltons](https://github.com/vectorize-io/boltons) fork, kept so the fixture can
+never disappear from under the benchmark) — so agents navigate a
 real repo, and retrieval competes against real history noise plus **140 decoy developer
 conversations**.
 
@@ -126,7 +128,7 @@ per-task traces (agent trajectory, patch, injected memory, git history).
 To build one task's repo without the runner:
 
 ```bash
-git clone https://github.com/mahmoud/boltons ~/dev/_sdebench_hosts/boltons  # or SDEBENCH_BOLTONS_HOST
+git clone https://github.com/vectorize-io/boltons ~/dev/_sdebench_hosts/boltons  # or SDEBENCH_BOLTONS_HOST
 python boltons-slalog/build.py /tmp/slalog-repo   # materializes the codebase at HEAD (bug in place)
 ```
 

@@ -136,7 +136,7 @@ task discriminates. The agent writes its own fix.
 Both tiers build on top of a local clone of boltons, pinned at `979fa9b`:
 
 ```bash
-git clone https://github.com/mahmoud/boltons ~/dev/_sdebench_hosts/boltons
+git clone https://github.com/vectorize-io/boltons ~/dev/_sdebench_hosts/boltons
 # or point elsewhere:
 export SDEBENCH_BOLTONS_HOST=/path/to/boltons
 ```
