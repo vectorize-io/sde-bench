@@ -76,7 +76,7 @@ def decoy_rows() -> list[dict]:
 
 CARD = """\
 ---
-license: bsd-3-clause
+license: mit
 task_categories:
 - text-generation
 language:
@@ -142,8 +142,9 @@ uv run omb run --dataset sdebench --split boltons --mode coding --memory vanilla
 uv run omb run --dataset sdebench --split boltons --mode coding --memory hindsight-coding
 ```
 
-boltons is © Mahmoud Hashemi, BSD. The traps, planted modules, tests, conversations, decoys, and
-this card are the sde-bench project's.
+License: MIT (the sde-bench content — traps, planted modules, tests, conversations, decoys, and
+this card). The boltons host fixture referenced at `host_repo`/`host_ref` is © Mahmoud Hashemi,
+BSD-3-Clause, used unmodified.
 """
 
 
