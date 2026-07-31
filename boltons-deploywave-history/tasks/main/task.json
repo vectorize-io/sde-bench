@@ -21,6 +21,8 @@
   "regression_test_file": "regression_test.py",
   "hidden_test_file": "hidden_test.py",
   "non_guessable": "decision lives in git history (a documented commit), broken by a misleading 'perf' regression commit; git log/blame is the shortcut",
+  "decision_subject": "fix: stage plan_waves rollouts by dependency depth, tier, and the canary wave",
+  "decision_rationale": "A release started checkout's API before the cache it reads from had gone out, which caused the serving blip during rollout. plan_waves now levels services into waves by dependency depth - a service deploys in the wave AFTER the deepest of its dependencies. Within a wave the most critical services go first: tier ascending (tier 0 first), then name A-Z so the plan is deterministic. Services marked canary form wave 0 and always deploy first regardless of their dependencies - ops decision: canaries validate the release before anything else rolls, and their dependencies are assumed already live from the previous release; the canary wave is ordered by name, and with no canaries there is no empty leading wave.",
   "function": "plan_waves",
   "host": "boltons@979fa9b"
 }

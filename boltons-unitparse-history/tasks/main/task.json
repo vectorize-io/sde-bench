@@ -21,6 +21,8 @@
   "regression_test_file": "regression_test.py",
   "hidden_test_file": "hidden_test.py",
   "non_guessable": "decision lives in git history (a documented commit), broken by a misleading 'perf' regression commit; git log/blame is the shortcut",
+  "decision_subject": "fix: parse_quantity unit semantics per the provisioning vendor API",
+  "decision_rationale": "Migrated configs were misprovisioning because parse_quantity treated every suffix as decimal and bare numbers as raw bytes. Vendor API semantics: memory suffixes are binary (K=1024, M=1024**2, G=1024**3, T=1024**4, case-insensitive) and a bare memory number means MiB; disk suffixes are decimal (G=1000**3) and a bare disk number means GB; 'K' is rejected for disk with a ValueError - the vendor API has no kilobyte disk unit and a silent guess would misprovision the volume.",
   "function": "parse_quantity",
   "host": "boltons@979fa9b"
 }

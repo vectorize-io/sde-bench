@@ -21,6 +21,8 @@
   "regression_test_file": "regression_test.py",
   "hidden_test_file": "hidden_test.py",
   "non_guessable": "decision lives in git history (a documented commit), broken by a misleading 'perf' regression commit; git log/blame is the shortcut",
+  "decision_subject": "fix: stop sync runs from duplicating and hollowing out CRM contacts",
+  "decision_rationale": "Sync runs kept re-inserting contacts whose email casing or same-day timestamps differed, and when records did collide, keep-latest let a stripped-down sync record wipe fields we already had. merge_records now treats the same email (case-insensitive) on the same calendar day as one contact, keeps the most-filled record on a clash, and on a tie keeps the primary-side record since the CRM is the source of truth.",
   "function": "merge_records",
   "host": "boltons@979fa9b"
 }

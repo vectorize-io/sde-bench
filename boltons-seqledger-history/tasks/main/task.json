@@ -21,6 +21,8 @@
   "regression_test_file": "regression_test.py",
   "hidden_test_file": "hidden_test.py",
   "non_guessable": "decision lives in git history (a documented commit), broken by a misleading 'perf' regression commit; git log/blame is the shortcut",
+  "decision_subject": "fix: enforce the audit ledger sequence contract (consecutive seq, compaction stride, hash-checked replays)",
+  "decision_rationale": "The compliance findings traced to append_event accepting any increasing seq (lost messages became silent holes) and overwriting replayed events in place (how primary and replica diverged). Per-tenant seq must be exactly last_seq + 1 - an empty trail counts as last seq 0, so a tenant's first event is seq 1 - and any gap raises SequenceGapError at write time. The single exception is the archiver's compaction marker (type == 'compaction'), which must advance seq by EXACTLY 100, the archiver's documented batch size; any other jump, including +1, is rejected the same way - no tolerance knob, that turns into 'gaps allowed' within a quarter. A duplicate seq is an idempotent no-op (returns False) only when its payload_hash matches the stored event; a mismatch raises SequenceConflictError - the ledger never overwrites and never silently ignores a conflicting replay, because swallowing mismatches is how the divergence went undetected for a month.",
   "function": "append_event",
   "host": "boltons@979fa9b"
 }

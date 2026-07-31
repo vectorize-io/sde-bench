@@ -21,6 +21,8 @@
   "regression_test_file": "regression_test.py",
   "hidden_test_file": "hidden_test.py",
   "non_guessable": "decision lives in git history (a documented commit), broken by a misleading 'perf' regression commit; git log/blame is the shortcut",
+  "decision_subject": "fix: stop the HTTP client from retrying non-transient failures",
+  "decision_rationale": "During the incident the client retried every failed request, including 401s, and locked accounts. Policy: retry any 5xx, plus exactly 429 and 408 from the 4xx range - 429 because the upstream rate-limits in bursts and 408 because their edge times requests out; every other 4xx is permanent and must not be retried. At most 4 attempts total, and backoff sleeps cap at 30 seconds because the gateway LB kills idle connections at 32s - sleeping longer just burns a dead connection.",
   "function": "should_retry",
   "host": "boltons@979fa9b"
 }

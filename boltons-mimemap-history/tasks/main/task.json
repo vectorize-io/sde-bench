@@ -21,6 +21,8 @@
   "regression_test_file": "regression_test.py",
   "hidden_test_file": "hidden_test.py",
   "non_guessable": "decision lives in git history (a documented commit), broken by a misleading 'perf' regression commit; git log/blame is the shortcut",
+  "decision_subject": "fix: pin content_type's MIME table - text/csv, x-yaml both spellings, svg charset, octet-stream fallback",
+  "decision_rationale": "All three asset tickets traced to content_type guessing types registry-style. The policy pins an in-code table - deterministic on every machine, never the platform mimetypes registry - with a case-insensitive extension lookup (lowercase before the lookup; .JPG, .CSV and .Html are all real inputs). Pinned overrides: .csv is text/csv - never application/vnd.ms-excel, the Windows-registry fossil that garbled the analytics exports; .yml AND .yaml both map to application/x-yaml; .svg is exactly 'image/svg+xml; charset=utf-8' - the charset suffix is required, mandated by the XSS pentest finding, because svg is markup; .js is text/javascript per the WHATWG registry, not application/javascript. Anything not in the table returns application/octet-stream - never text/plain, the fallback that displayed a leaked build artifact inline. A name with no extension, a bare trailing dot, or a plain dotfile like .env has no extension and returns octet-stream, but a dot-leading name with a real extension (.config.yaml) maps by its real extension.",
   "function": "content_type",
   "host": "boltons@979fa9b"
 }

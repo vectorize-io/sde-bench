@@ -21,6 +21,8 @@
   "regression_test_file": "regression_test.py",
   "hidden_test_file": "hidden_test.py",
   "non_guessable": "decision lives in git history (a documented commit), broken by a misleading 'perf' regression commit; git log/blame is the shortcut",
+  "decision_subject": "fix: close the gaps in log-event scrubbing flagged by the compliance audit",
+  "decision_rationale": "The audit found secrets leaking through redact - it only matched two exact top-level names. New rule: normalize each key (lowercase, non-alphanumerics to underscores) and treat it as sensitive when it ENDS WITH password, token, api_key, ssn or card_number, recursively through nested dicts and lists. Sensitive values become ***, except card numbers, which keep their last4 as ***1234 - support reconciles chargeback disputes by the last4. Email is explicitly NOT masked: support answers tickets by looking customers up by email, and scrubbing it broke that once before.",
   "function": "redact",
   "host": "boltons@979fa9b"
 }

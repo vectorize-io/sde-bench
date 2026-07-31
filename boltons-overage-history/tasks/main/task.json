@@ -21,6 +21,8 @@
   "regression_test_file": "regression_test.py",
   "hidden_test_file": "hidden_test.py",
   "non_guessable": "decision lives in git history (a documented commit), broken by a misleading 'perf' regression commit; git log/blame is the shortcut",
+  "decision_subject": "fix: prorate the included quota and bill overage in blocks past the grace allowance",
+  "decision_rationale": "Both support escalations traced to overage_charge ignoring the billing policy. The included quota prorates by calendar day: allowed so far is plan quota * day_of_month / days_in_month, rounded UP to the next whole unit - always ceil, never truncation, so a fractional day's unit counts in the customer's favor and nobody is billed off a rounding artifact. Only usage beyond that prorated allowance is overage. The first 25 overage units in the month are a free grace allowance, applied BEFORE any block rounding (billable = overage - 25, floored at zero) - that was the concession after the March billing-support incident, so trivial overruns never reach an invoice. What remains bills in 50-unit blocks, rounded UP to a whole block (a partial block bills as a full block) at plan['block_fee'] per block - never per unit, per-unit line items are what made reconciliation impossible.",
   "function": "overage_charge",
   "host": "boltons@979fa9b"
 }

@@ -21,6 +21,8 @@
   "regression_test_file": "regression_test.py",
   "hidden_test_file": "hidden_test.py",
   "non_guessable": "decision lives in git history (a documented commit), broken by a misleading 'perf' regression commit; git log/blame is the shortcut",
+  "decision_subject": "fix: make the ERP CSV export round-trip every field value exactly",
+  "decision_rationale": "Part numbers with leading zeros were coming back stripped after the ERP import - \"00042\" became \"42\" and broke SKU lookups; plain quoting does not stop the coercion. Digit-only values with a leading zero are now written in the Excel-style text form =\"00042\", the only form the ERP import keeps verbatim. Everything else uses minimal quoting (quote a field only when it contains a comma, quote, or newline; double embedded quotes), and rows end with CRLF because the ERP parser rejects bare newlines. Invariant: the import round-trips every field byte-for-byte.",
   "function": "to_csv",
   "host": "boltons@979fa9b"
 }

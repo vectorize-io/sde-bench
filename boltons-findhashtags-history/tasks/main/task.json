@@ -20,5 +20,7 @@
   ],
   "regression_test_file": "regression_test.py",
   "hidden_test_file": "hidden_test.py",
-  "non_guessable": "the project policy was added in a documented commit then removed by a misleading 'refactor' regression; HEAD is stock boltons \u2014 git log/blame reveals the rule"
+  "non_guessable": "the project policy was added in a documented commit then removed by a misleading 'refactor' regression; HEAD is stock boltons \u2014 git log/blame reveals the rule",
+  "decision_subject": "feat: drop all-numeric hashtags except 4-digit years in find_hashtags",
+  "decision_rationale": "The trending feed must drop purely numeric tags (junk like #42) BUT keep 4-digit years (1900-2099, e.g. #2024) \u2014 those are real campaign tags. Filter all-digit tags unless they parse as a 4-digit year in that range."
 }

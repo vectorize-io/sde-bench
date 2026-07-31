@@ -20,5 +20,7 @@
   ],
   "regression_test_file": "regression_test.py",
   "hidden_test_file": "hidden_test.py",
-  "non_guessable": "the project policy was added in a documented commit then removed by a misleading 'refactor' regression; HEAD is stock boltons \u2014 git log/blame reveals the rule"
+  "non_guessable": "the project policy was added in a documented commit then removed by a misleading 'refactor' regression; HEAD is stock boltons \u2014 git log/blame reveals the rule",
+  "decision_subject": "feat: project plural overrides for schema/legal terms in pluralize",
+  "decision_rationale": "Our schema + legal docs require formal/DB plurals that differ from boltons' defaults: person -> 'persons' (not 'people'), index -> 'indexes' (DB indexes, not 'indices'), matrix -> 'matrixes' (not 'matrices'). Apply this override map before the normal logic; leave everything else as-is."
 }

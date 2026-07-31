@@ -115,6 +115,7 @@ def emit(name):
         "regression_test_file": "regression_test.py", "hidden_test_file": "hidden_test.py",
         "non_guessable": "decision lives in git history (a documented commit), broken by a misleading "
                          "'perf' regression commit; git log/blame is the shortcut",
+        "decision_subject": H_MSG[name][0], "decision_rationale": H_MSG[name][1],
     }
     tj = ds / "task.json"
     if tj.exists():  # preserve post-emission enrichment keys (function/policy/non_guessable/host, ...)

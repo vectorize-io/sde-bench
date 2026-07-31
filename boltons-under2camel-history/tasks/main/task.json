@@ -20,5 +20,7 @@
   ],
   "regression_test_file": "regression_test.py",
   "hidden_test_file": "hidden_test.py",
-  "non_guessable": "the project policy was added in a documented commit then removed by a misleading 'refactor' regression; HEAD is stock boltons \u2014 git log/blame reveals the rule"
+  "non_guessable": "the project policy was added in a documented commit then removed by a misleading 'refactor' regression; HEAD is stock boltons \u2014 git log/blame reveals the rule",
+  "decision_subject": "feat: keep domain acronyms uppercase in under2camel",
+  "decision_rationale": "Generated class names must keep the acronym set {HTTP, API, SKU, GDPR} fully uppercase (incl. our domain SKU/GDPR), while common tokens db/sql/url title-case normally. So http_response -> 'HTTPResponse', sku_count -> 'SKUCount', gdpr_flag -> 'GDPRFlag', but db_name -> 'DbName'."
 }

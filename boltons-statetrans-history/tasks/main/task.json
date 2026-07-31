@@ -21,6 +21,8 @@
   "regression_test_file": "regression_test.py",
   "hidden_test_file": "hidden_test.py",
   "non_guessable": "decision lives in git history (a documented commit), broken by a misleading 'perf' regression commit; git log/blame is the shortcut",
+  "decision_subject": "fix: pin the order lifecycle transition map after the double-refund incident",
+  "decision_rationale": "The double-refund incident happened because advance() let an order jump to any later-looking status: one order was cancelled while its charge was mid-capture and then refunded twice. The lifecycle is now pinned: pending -> paid/on_hold/cancelled; paid -> shipped/on_hold ONLY - a charged order can never move straight to cancelled, it must go on_hold first so the charge settles; on_hold -> pending/cancelled; shipped -> returned; returned -> refunded, and refunded is reachable ONLY from returned, never straight from paid or shipped; cancelled and refunded are terminal. The OMS sends states like 'Paid'/'SHIPPED', so advance compares states case-insensitively and always stores the lowercase canonical form.",
   "function": "advance",
   "host": "boltons@979fa9b"
 }

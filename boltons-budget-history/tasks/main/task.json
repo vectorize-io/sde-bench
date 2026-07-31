@@ -20,5 +20,7 @@
   ],
   "regression_test_file": "regression_test.py",
   "hidden_test_file": "hidden_test.py",
-  "non_guessable": "decision lives in git history (a documented commit), broken by a misleading 'perf' regression commit; git log/blame is the shortcut"
+  "non_guessable": "decision lives in git history (a documented commit), broken by a misleading 'perf' regression commit; git log/blame is the shortcut",
+  "decision_subject": "fix: cap Retrier at the measured attempt budget for the rate-limit window",
+  "decision_rationale": "MAX_ATTEMPTS is 7 \u2014 measured, not round. The cumulative backoff for 7 attempts is 12.7s, inside the upstream's rate-limit reset window; an 8th attempt pushes cumulative delay to 25.5s and trips the upstream limiter. Keep MAX_ATTEMPTS = 7; do not round it up to 8/10."
 }

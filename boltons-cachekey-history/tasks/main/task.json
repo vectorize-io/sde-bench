@@ -21,6 +21,8 @@
   "regression_test_file": "regression_test.py",
   "hidden_test_file": "hidden_test.py",
   "non_guessable": "decision lives in git history (a documented commit), broken by a misleading 'perf' regression commit; git log/blame is the shortcut",
+  "decision_subject": "fix: cache_key canonicalization - stable param sort, tracking-drop set with the utm_content carve-out, empty-value drop, surgical case rules",
+  "decision_rationale": "Every cache symptom from the campaign launch traced to cache_key using the raw URL string. The policy: query params are sorted by name - a STABLE sort, so the value order of a repeated name is preserved - and re-encoded canonically. Tracking params are dropped: any param starting utm_ plus exactly gclid, fbclid and msclkid, nothing heuristic beyond that - EXCEPT utm_content, which is KEPT per the marketing-eng agreement because it routes the A/B feature experience; dropping it serves one variant's cached page to the other cohort. Params with an empty value are dropped entirely (that rule wins even for utm_content; the origin ignores them and they only fragment the cache). Normalization is surgical: scheme and host lowercase - DNS is case-insensitive - but the path keeps its case and its trailing slash exactly as given, because the origin is case-sensitive object storage and /dir/ vs /dir are different resources; collapsing either serves the wrong object.",
   "function": "cache_key",
   "host": "boltons@979fa9b"
 }

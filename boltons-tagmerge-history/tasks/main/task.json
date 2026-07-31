@@ -21,6 +21,8 @@
   "regression_test_file": "regression_test.py",
   "hidden_test_file": "hidden_test.py",
   "non_guessable": "decision lives in git history (a documented commit), broken by a misleading 'perf' regression commit; git log/blame is the shortcut",
+  "decision_subject": "fix: precedence-aware tag merging with scoped tombstone suppression",
+  "decision_rationale": "The source-of-truth migration made merge_tags' input an ordered list of sources, highest precedence first (CMDB, then cloud provider, then legacy inventory), and the old concat-and-exact-dedupe produced every symptom ops reported. merge_tags now unions sources in precedence order, de-duplicated case-insensitively, keeping the casing of the first (highest-precedence) occurrence, in first-occurrence order. A tombstone entry '-name' suppresses that tag (matched case-insensitively) from all LOWER-precedence sources, but never removes a tag a higher-precedence source asserted itself - a tombstone speaks only for the sources below it, NOT a global kill list, or the junkiest source could delete the source of truth's tags. Tombstones never appear in the output, and an unmatched tombstone is silently fine - ops writes them speculatively.",
   "function": "merge_tags",
   "host": "boltons@979fa9b"
 }

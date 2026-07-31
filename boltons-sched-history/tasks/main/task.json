@@ -21,6 +21,8 @@
   "regression_test_file": "regression_test.py",
   "hidden_test_file": "hidden_test.py",
   "non_guessable": "decision lives in git history (a documented commit), broken by a misleading 'perf' regression commit; git log/blame is the shortcut",
+  "decision_subject": "fix: next_job tenant rotation and tie-breaking policy",
+  "decision_rationale": "One tenant with a deep queue of high-priority jobs was monopolizing the worker while everyone else starved. next_job now never runs the same tenant back-to-back - a job from the tenant that just ran is skipped whenever any other tenant has something queued, even if it outranks them - and on a priority tie the shorter est_runtime goes first instead of FIFO, so quick jobs stop getting stuck behind long ones.",
   "function": "next_job",
   "host": "boltons@979fa9b"
 }

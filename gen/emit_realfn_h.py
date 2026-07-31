@@ -97,6 +97,7 @@ def emit(name):
         "regression_test_file": "regression_test.py", "hidden_test_file": "hidden_test.py",
         "non_guessable": "the project policy was added in a documented commit then removed by a misleading "
                          "'refactor' regression; HEAD is stock boltons — git log/blame reveals the rule",
+        "decision_subject": H_MSG[name][0], "decision_rationale": H_MSG[name][1],
     }
     (ds / "task.json").write_text(json.dumps(task, indent=2))
     return cb

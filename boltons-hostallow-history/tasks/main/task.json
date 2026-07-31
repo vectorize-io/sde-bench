@@ -21,6 +21,8 @@
   "regression_test_file": "regression_test.py",
   "hidden_test_file": "hidden_test.py",
   "non_guessable": "decision lives in git history (a documented commit), broken by a misleading 'perf' regression commit; git log/blame is the shortcut",
+  "decision_subject": "fix: is_allowed egress matching - lowercase + rooted-FQDN normalization, single-label wildcards, exact-only IP literals",
+  "decision_rationale": "Every finding in the egress review traced to is_allowed doing raw string suffix matching. The policy: hostnames are case-insensitive, so the host and every allowlist entry normalize to lowercase, and a single trailing dot (a rooted FQDN like host.example.com.) is stripped before matching - the rooted form names the same host, and 'correcting' a config to it must not break egress. Exact entries match the normalized host exactly - never by suffix, so evilexample.com can no longer ride an example.com entry, and an exact entry does not cover subdomains. A wildcard *.example.com covers EXACTLY ONE additional left label - a.example.com yes, a.b.example.com no, bare example.com no - the single-level rule security mandated after the subdomain-takeover incident; deeper names get their own entries. IPv4 dotted-quad hosts match ONLY exact IP entries: wildcards are a DNS concept and never apply to IP literals.",
   "function": "is_allowed",
   "host": "boltons@979fa9b"
 }

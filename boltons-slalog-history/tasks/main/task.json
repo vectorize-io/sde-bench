@@ -21,6 +21,8 @@
   "regression_test_file": "regression_test.py",
   "hidden_test_file": "hidden_test.py",
   "non_guessable": "decision lives in git history (a documented commit), broken by a misleading 'perf' regression commit; git log/blame is the shortcut",
+  "decision_subject": "fix: align downtime_minutes with the SLA credit accounting addendum",
+  "decision_rationale": "Tenants were disputing uptime reports because downtime_minutes summed raw alert windows. Per the SLA credit addendum: overlapping or touching incident windows merge before summing so concurrent alerts never double-count; a merged outage under 60 seconds is a monitoring blip and counts for nothing (the threshold applies to the merged window, not per raw incident); and maintenance reduces downtime only when announced at least 24 hours before its start (announced_at) - short-notice maintenance still counts as downtime, customers do not eat credits for surprise maintenance.",
   "function": "downtime_minutes",
   "host": "boltons@979fa9b"
 }

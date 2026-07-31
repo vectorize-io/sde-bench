@@ -20,5 +20,7 @@
   ],
   "regression_test_file": "regression_test.py",
   "hidden_test_file": "hidden_test.py",
-  "non_guessable": "the project policy was added in a documented commit then removed by a misleading 'refactor' regression; HEAD is stock boltons \u2014 git log/blame reveals the rule"
+  "non_guessable": "the project policy was added in a documented commit then removed by a misleading 'refactor' regression; HEAD is stock boltons \u2014 git log/blame reveals the rule",
+  "decision_subject": "feat: expand &/$/% to the team's SEO analytics words in slugify",
+  "decision_rationale": "Product-page slugs must preserve the symbols &, $, % as the analytics-standard words: & -> 'and', $ -> 'usd', % -> 'pct' (NOT 'dollar'/'percent' \u2014 those broke search-tag matching). Applied before the existing punct split so 'R&D' -> 'r-and-d', '$5 sale' -> 'usd-5-sale', '50% off' -> '50-pct-off'."
 }

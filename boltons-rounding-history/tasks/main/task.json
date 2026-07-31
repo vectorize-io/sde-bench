@@ -20,5 +20,7 @@
   ],
   "regression_test_file": "regression_test.py",
   "hidden_test_file": "hidden_test.py",
-  "non_guessable": "decision lives in git history (a documented commit), broken by a misleading 'perf' regression commit; git log/blame is the shortcut"
+  "non_guessable": "decision lives in git history (a documented commit), broken by a misleading 'perf' regression commit; git log/blame is the shortcut",
+  "decision_subject": "fix: round half-cents DOWN to match the legacy billing ledger",
+  "decision_rationale": "Month-end reconciliation against the legacy ledger only lines up when round_cents rounds half-cents toward zero \u2014 i.e. ROUND_HALF_DOWN, so 2.135 -> 2.13. Do NOT switch to half-up or banker's rounding (ROUND_HALF_UP / ROUND_HALF_EVEN): both reintroduce the half-cent drift finance flagged. Keep the mode pinned to ROUND_HALF_DOWN."
 }

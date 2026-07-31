@@ -21,6 +21,8 @@
   "regression_test_file": "regression_test.py",
   "hidden_test_file": "hidden_test.py",
   "non_guessable": "decision lives in git history (a documented commit), broken by a misleading 'perf' regression commit; git log/blame is the shortcut",
+  "decision_subject": "fix: drain_order shutdown plan - in-flight ordering, idempotent carve-out, expired-deadline drops",
+  "decision_rationale": "Every symptom from the last restart wave traced to drain_order treating a drain as an id-sorted requeue. The plan is three rules. In-flight jobs (state == 'running') always finish and lead run_now ordered by remaining estimate ascending - shortest first, ties by id - because finishing short work first frees workers fastest and that's what bounds the restart. Queued jobs are requeued, with one carve-out: a queued job marked idempotent whose deadline falls inside the drain window (now <= deadline <= now + window) runs now, after the in-flight jobs, ordered by deadline then id - idempotent-only because rerunning anything else after the requeue double-fires it, which is exactly the duplicated-export incident. Everything else requeues in its ORIGINAL queue order (no re-sorting - the queue order is a fairness promise), except that a queued job whose deadline is already exceeded (deadline < now) is dropped entirely and recorded in the returned dropped list, original order - requeuing expired work is how ancient jobs got resurrected after last week's restart.",
   "function": "drain_order",
   "host": "boltons@979fa9b"
 }
