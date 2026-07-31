@@ -20,7 +20,7 @@ _h = os.environ.get("SDEBENCH_BOLTONS_HOST")
 if not _h:
     sys.exit("SDEBENCH_BOLTONS_HOST is required: git clone https://github.com/vectorize-io/boltons "
              "and point SDEBENCH_BOLTONS_HOST at the clone")
-HOST = Path(_h)
+HOST = Path(os.path.expanduser(_h))
 REF = {ref!r}
 KEEP = set({keep!r}) | {{"conftest.py", "__init__.py"}}
 
