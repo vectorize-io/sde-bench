@@ -138,8 +138,8 @@ To *run* the benchmark (build task repos, drive an agent, grade in Docker, count
 use the runner in [agent-memory-benchmark](https://github.com/vectorize-io/agent-memory-benchmark):
 
 ```bash
-uv run omb run --dataset sdebench --split boltons --mode coding --memory vanilla
-uv run omb run --dataset sdebench --split boltons --mode coding --memory hindsight-coding
+uv run amb run --dataset sdebench --split boltons --mode coding --memory vanilla
+uv run amb run --dataset sdebench --split boltons --mode coding --memory hindsight-coding
 ```
 
 License: MIT (the sde-bench content — traps, planted modules, tests, conversations, decoys, and

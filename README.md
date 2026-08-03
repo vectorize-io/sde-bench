@@ -111,20 +111,20 @@ The runner lives in [agent-memory-benchmark](https://github.com/vectorize-io/age
 
 ```bash
 # baseline (no memory)
-uv run omb run --dataset sdebench --split boltons --mode coding --memory vanilla
+uv run amb run --dataset sdebench --split boltons --mode coding --memory vanilla
 
 # the Hindsight coding-agents plugin (agent-side reflect+inject)
 SDE_HINDSIGHT_URL=http://localhost:8888 \
-  uv run omb run --dataset sdebench --split boltons --mode coding --memory hindsight-coding
+  uv run amb run --dataset sdebench --split boltons --mode coding --memory hindsight-coding
 
 # ANY registered memory provider (generic path: ingest corpus -> retrieve -> inject into prompt)
-uv run omb run --dataset sdebench --split boltons --mode coding --memory bm25
+uv run amb run --dataset sdebench --split boltons --mode coding --memory bm25
 ```
 
 Agents: `SDE_AGENT=opencode|claude-code|codex` (Gemini Flash / Claude Sonnet / GPT Codex Mini) —
 same tasks, same grading, per-agent memory delivery. Useful flags: `--query-id <task_id>`,
 `-q N` (first N alphabetically), `--category history|conversation|conversation-amended`,
-`--skip-ingestion` (reuse memory state across n-runs). `omb view` serves the results UI with
+`--skip-ingestion` (reuse memory state across n-runs). `amb view` serves the results UI with
 per-task traces (agent trajectory, patch, injected memory, git history).
 
 To build one task's repo without the runner:
